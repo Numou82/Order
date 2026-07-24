@@ -26,9 +26,9 @@
             📦 LogiTrack OS <span class="text-xs bg-indigo-500 px-2 py-1 rounded">v1.0</span>
         </h1>
         <div class="flex gap-4">
-            <button onclick="switchTab('orders-tab')" class="hover:bg-indigo-700 px-3 py-2 rounded transition font-medium">Orders Dashboard</button>
-            <button onclick="switchTab('inventory-tab')" class="hover:bg-indigo-700 px-3 py-2 rounded transition font-medium">Cycle Count & Inventory</button>
-            <button onclick="switchTab('barcode-tab')" class="hover:bg-indigo-700 px-3 py-2 rounded transition font-medium">Location Barcode Generator</button>
+            <button onclick="switchTab('orders-tab')" class="hover:bg-indigo-700 px-3 py-2 rounded transition font-medium cursor-pointer">Orders Dashboard</button>
+            <button onclick="switchTab('inventory-tab')" class="hover:bg-indigo-700 px-3 py-2 rounded transition font-medium cursor-pointer">Cycle Count & Inventory</button>
+            <button onclick="switchTab('barcode-tab')" class="hover:bg-indigo-700 px-3 py-2 rounded transition font-medium cursor-pointer">Location Barcode Generator</button>
         </div>
     </nav>
 
@@ -38,7 +38,7 @@
         <section id="orders-tab" class="tab-content">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-bold text-gray-900">Incoming Shopify Orders</h2>
-                <button onclick="simulateIncomingOrder()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition shadow">
+                <button onclick="simulateIncomingOrder()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition shadow cursor-pointer">
                     🔌 Simulate Shopify Webhook Order
                 </button>
             </div>
@@ -101,10 +101,10 @@
 
                         <!-- Action Buttons -->
                         <div class="border-t pt-4 mt-6 flex gap-3 justify-end">
-                            <button id="btn-invoice" class="bg-gray-800 hover:bg-gray-900 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition hidden shadow">
+                            <button id="btn-invoice" onclick="openInvoiceModal()" class="bg-gray-800 hover:bg-gray-900 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition shadow cursor-pointer">
                                 📄 Generate & Print Sales Invoice
                             </button>
-                            <button id="btn-fulfill" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition shadow">
+                            <button id="btn-fulfill" onclick="fulfillCurrentOrder()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition shadow cursor-pointer">
                                 ✔ Complete Fulfillment & Pick
                             </button>
                         </div>
@@ -121,6 +121,9 @@
                         <h2 class="text-2xl font-bold text-gray-900">Inventory Cycle Counting</h2>
                         <p class="text-sm text-gray-500">Real-time dynamic tracking of your items across assigned rack and shelf locations.</p>
                     </div>
+                    <button onclick="openAddItemModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition shadow cursor-pointer">
+                        ➕ Add / Assign Item to Location
+                    </button>
                 </div>
                 
                 <div class="overflow-x-auto">
@@ -151,13 +154,13 @@
                     <form id="barcode-form" onsubmit="generateBarcode(event)" class="space-y-4">
                         <div>
                             <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Rack Number / Identifier</label>
-                            <input type="text" id="bc-rack" placeholder="e.g., RACK-A" class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none text-sm" required>
+                            <input type="text" id="bc-rack" placeholder="e.g., RACK-A" class="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none text-sm" required>
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Shelf Number / Level</label>
-                            <input type="text" id="bc-shelf" placeholder="e.g., SHELF-03" class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none text-sm" required>
+                            <input type="text" id="bc-shelf" placeholder="e.g., SHELF-03" class="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none text-sm" required>
                         </div>
-                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-lg text-sm font-medium transition shadow">
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-lg text-sm font-medium transition shadow cursor-pointer">
                             Generate Barcode Label
                         </button>
                     </form>
@@ -168,7 +171,7 @@
                     <div>
                         <h3 class="font-bold text-gray-700 mb-4 border-b pb-2">Label Printable Output Preview</h3>
                         <div class="flex justify-center items-center bg-gray-50 border border-dashed border-gray-300 rounded-xl p-8 min-h-[250px]">
-                            <div id="barcode-print-target" class="bg-white p-6 border shadow-sm text-center w-72 flex flex-col items-center justify-center">
+                            <div id="barcode-print-target" class="bg-white p-6 border border-gray-200 shadow-sm text-center w-72 flex flex-col items-center justify-center rounded-lg">
                                 <p class="text-xs uppercase tracking-widest text-gray-400 font-bold mb-2">Location Identifier</p>
                                 <h4 id="barcode-txt-loc" class="text-lg font-black tracking-wider text-indigo-700 mb-3">LOC-NONE</h4>
                                 <svg id="barcode-svg"></svg>
@@ -176,7 +179,7 @@
                         </div>
                     </div>
                     <div class="mt-4 flex justify-end">
-                        <button onclick="printBarcodePDF()" class="bg-gray-800 hover:bg-gray-900 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition shadow">
+                        <button onclick="printBarcodePDF()" class="bg-gray-800 hover:bg-gray-900 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition shadow cursor-pointer">
                             🖨️ Export & Print Barcode PDF
                         </button>
                     </div>
@@ -186,17 +189,50 @@
 
     </div>
 
-    <!-- ================= INVOICE PRINT MODAL & VIEW (HIDDEN IN APP, VISIBLE ON PRINT) ================= -->
+    <!-- ================= ADD ITEM TO LOCATION MODAL ================= -->
+    <div id="add-item-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 relative">
+            <button onclick="closeAddItemModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl font-bold">&times;</button>
+            <h3 class="text-xl font-bold text-gray-900 mb-4">Add Item to Location</h3>
+            <form onsubmit="handleAddItemSubmit(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">SKU Code</label>
+                    <input type="text" id="add-sku" placeholder="e.g., SKU-HDM-CBL" class="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" required>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Item Name</label>
+                    <input type="text" id="add-name" placeholder="e.g., Ultra HD HDMI Cable 3m" class="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" required>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Rack ID</label>
+                        <input type="text" id="add-rack" placeholder="RACK-A" class="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Shelf ID</label>
+                        <input type="text" id="add-shelf" placeholder="SHELF-01" class="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" required>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Initial Stock Level</label>
+                    <input type="number" id="add-stock" min="1" placeholder="50" class="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" required>
+                </div>
+                <div class="pt-2 flex justify-end gap-3">
+                    <button type="button" onclick="closeAddItemModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg text-sm font-medium transition cursor-pointer">Cancel</button>
+                    <button type="submit" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition shadow cursor-pointer">Save & Assign</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= INVOICE PRINT MODAL & VIEW ================= -->
     <div id="invoice-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden overflow-y-auto p-4">
         <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full p-8 relative flex flex-col max-h-[90vh]">
             <button onclick="closeInvoiceModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl font-bold">&times;</button>
             
-            <!-- Dynamic PDF Wrapper Container -->
             <div id="print-area" class="overflow-y-auto pr-2 flex-1 p-4 bg-white">
-                <!-- Invoice Document Body Header -->
                 <div class="flex justify-between items-start border-b-2 border-gray-200 pb-6 mb-6">
                     <div>
-                        <!-- Embedded Placeholder Vector Logo representing "Our Company" -->
                         <div class="flex items-center gap-2 mb-2">
                             <span class="h-8 w-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-black text-lg">L</span>
                             <span class="text-xl font-black text-gray-900 tracking-tight">LOGIX GLOBAL LTD.</span>
@@ -211,7 +247,6 @@
                     </div>
                 </div>
 
-                <!-- Addresses Structure Grid -->
                 <div class="grid grid-cols-2 gap-8 mb-8 text-sm">
                     <div>
                         <h5 class="font-bold text-gray-400 uppercase text-xs mb-2 tracking-wider">Bill & Ship To:</h5>
@@ -221,7 +256,6 @@
                     </div>
                 </div>
 
-                <!-- Products Table Mapping -->
                 <table class="w-full text-left text-sm border-collapse mb-8">
                     <thead>
                         <tr class="bg-gray-800 text-white font-semibold uppercase text-xs tracking-wider">
@@ -237,7 +271,6 @@
                     </tbody>
                 </table>
 
-                <!-- Total Summary Block -->
                 <div class="flex justify-end mb-8">
                     <div class="w-64 text-sm space-y-2">
                         <div class="flex justify-between text-gray-600">
@@ -255,7 +288,6 @@
                     </div>
                 </div>
 
-                <!-- Dynamic Terms and Conditions Section -->
                 <div class="border-t pt-4 mt-8 bg-gray-50 p-4 rounded-lg">
                     <h5 class="text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Terms, Agreements & Declarations:</h5>
                     <p class="text-[11px] text-gray-500 leading-relaxed">
@@ -266,19 +298,18 @@
                 </div>
             </div>
 
-            <!-- Modal Bottom Control Row -->
             <div class="mt-4 pt-4 border-t flex justify-end gap-3">
-                <button onclick="closeInvoiceModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg text-sm font-medium transition">
+                <button onclick="closeInvoiceModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg text-sm font-medium transition cursor-pointer">
                     Close Window
                 </button>
-                <button onclick="triggerInvoicePrint()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition shadow">
+                <button onclick="triggerInvoicePrint()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition shadow cursor-pointer">
                     🖨️ Print Invoice Document PDF
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- ================= APP LOGIC SYSTEM INTERFACE JAVASCRIPT ================= -->
+    <!-- ================= APP LOGIC JAVASCRIPT ================= -->
     <script>
         // Centralized Master Inventory State Registry
         let inventory = {
@@ -331,7 +362,241 @@
             document.getElementById(tabId).classList.remove('hidden');
         }
 
+        // Render Orders List
+        function renderOrdersList() {
+            const listEl = document.getElementById('order-list');
+            listEl.innerHTML = '';
+            
+            orders.forEach(ord => {
+                const isSelected = ord.id === selectedOrderId;
+                const card = document.createElement('div');
+                card.className = `p-4 rounded-lg border cursor-pointer transition ${isSelected ? 'border-indigo-600 bg-indigo-50/50 shadow-sm' : 'border-gray-200 hover:border-gray-300 bg-white'}`;
+                card.onclick = () => selectOrder(ord.id);
+                
+                card.innerHTML = `
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="font-bold text-gray-900">${ord.id}</span>
+                        <span class="text-xs px-2 py-0.5 rounded-full font-medium ${ord.status === 'Fulfilled' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">${ord.status}</span>
+                    </div>
+                    <p class="text-xs text-gray-600 mb-1">${ord.customer}</p>
+                    <p class="text-[11px] text-gray-400">${ord.date}</p>
+                `;
+                listEl.appendChild(card);
+            });
+        }
+
+        // Select Order View
+        function selectOrder(orderId) {
+            selectedOrderId = orderId;
+            renderOrdersList();
+            
+            const ord = orders.find(o => o.id === orderId);
+            if (!ord) return;
+
+            document.getElementById('order-details-blank').classList.add('hidden');
+            document.getElementById('order-details-content').classList.remove('hidden');
+
+            document.getElementById('det-order-id').innerText = "#" + ord.id;
+            document.getElementById('det-order-date').innerText = "Date: " + ord.date;
+            document.getElementById('det-cust-name').innerText = ord.customer;
+            document.getElementById('det-cust-phone').innerText = ord.phone;
+            document.getElementById('det-cust-address').innerText = ord.address;
+
+            const statusEl = document.getElementById('det-status');
+            statusEl.innerText = ord.status;
+            statusEl.className = `px-3 py-1 rounded-full text-xs font-semibold ${ord.status === 'Fulfilled' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`;
+
+            const itemsBody = document.getElementById('det-items-body');
+            itemsBody.innerHTML = '';
+
+            ord.items.forEach((item, index) => {
+                const invItem = inventory[item.sku] || { name: "Unknown Item", location: "UNASSIGNED" };
+                const row = document.createElement('tr');
+                row.className = "border-b border-gray-100 hover:bg-gray-50";
+                row.innerHTML = `
+                    <td class="p-3">
+                        <p class="font-semibold text-gray-800">${invItem.name}</p>
+                        <p class="text-xs text-gray-400 font-mono">${item.sku}</p>
+                    </td>
+                    <td class="p-3 text-center font-bold text-gray-700">${item.qty}</td>
+                    <td class="p-3">
+                        <button onclick="revealLocation(this, '${invItem.location}')" class="px-3 py-1 text-xs bg-indigo-50 text-indigo-600 border border-indigo-200 hover:bg-indigo-100 font-medium rounded transition cursor-pointer">
+                            📍 Reveal Location
+                        </button>
+                    </td>
+                `;
+                itemsBody.appendChild(row);
+            });
+        }
+
+        function revealLocation(btn, location) {
+            btn.outerHTML = `<span class="px-2.5 py-1 text-xs bg-indigo-100 text-indigo-800 font-mono font-bold rounded">${location}</span>`;
+        }
+
+        function fulfillCurrentOrder() {
+            if (!selectedOrderId) return;
+            const ord = orders.find(o => o.id === selectedOrderId);
+            if (ord) {
+                ord.status = "Fulfilled";
+                selectOrder(selectedOrderId);
+            }
+        }
+
         // Shopify Webhook Simulating Component
         function simulateIncomingOrder() {
             const mockIds = ["9484", "9485", "9486", "9487"];
-            const randId = "ORD-" + mockIds[Math.
+            const randNum = mockIds[Math.floor(Math.random() * mockIds.length)];
+            const newId = "ORD-" + randNum + "-" + Math.floor(100 + Math.random() * 900);
+
+            const mockNames = ["Sarah Connor", "Bruce Wayne", "Diana Prince", "Clark Kent"];
+            const randName = mockNames[Math.floor(Math.random() * mockNames.length)];
+
+            const newOrder = {
+                id: newId,
+                date: new Date().toISOString().replace('T', ' ').substring(0, 16),
+                customer: randName,
+                phone: "+1 (555) 321-7654",
+                address: "456 Webhook Avenue, Suite 101\nAustin, TX 78701",
+                status: "Pending Pick",
+                items: [
+                    { sku: "SKU-PRO-MAX", qty: 1, price: 129.99 },
+                    { sku: "SKU-MOU-ERG", qty: 1, price: 89.00 }
+                ]
+            };
+
+            orders.unshift(newOrder);
+            renderOrdersList();
+            selectOrder(newId);
+        }
+
+        // Cycle Count Inventory Rendering
+        function renderCycleCountTable() {
+            const tbody = document.getElementById('inventory-table-body');
+            tbody.innerHTML = '';
+
+            Object.keys(inventory).forEach(sku => {
+                const item = inventory[sku];
+                const row = document.createElement('tr');
+                row.className = "hover:bg-gray-50";
+
+                let statusBadge = item.stock > 20 
+                    ? `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">In Stock</span>`
+                    : `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700">Low Stock</span>`;
+
+                row.innerHTML = `
+                    <td class="p-4 font-mono font-semibold text-indigo-600">${sku}</td>
+                    <td class="p-4 font-medium text-gray-800">${item.name}</td>
+                    <td class="p-4"><span class="bg-gray-100 font-mono px-2 py-1 rounded text-xs font-bold text-gray-700">${item.location}</span></td>
+                    <td class="p-4 text-center font-bold text-gray-800">${item.stock}</td>
+                    <td class="p-4">${statusBadge}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Add Item Modal Actions
+        function openAddItemModal() {
+            document.getElementById('add-item-modal').classList.remove('hidden');
+        }
+
+        function closeAddItemModal() {
+            document.getElementById('add-item-modal').classList.add('hidden');
+        }
+
+        function handleAddItemSubmit(e) {
+            e.preventDefault();
+            const sku = document.getElementById('add-sku').value.trim().toUpperCase();
+            const name = document.getElementById('add-name').value.trim();
+            const rack = document.getElementById('add-rack').value.trim().toUpperCase();
+            const shelf = document.getElementById('add-shelf').value.trim().toUpperCase();
+            const stock = parseInt(document.getElementById('add-stock').value, 10);
+
+            const location = `${rack}-${shelf}`;
+            inventory[sku] = { name, location, stock };
+
+            renderCycleCountTable();
+            closeAddItemModal();
+            e.target.reset();
+        }
+
+        // Barcode Generation Engine
+        function generateDefaultBarcode() {
+            updateBarcodeSVG("RACK-A-SHELF-01");
+        }
+
+        function generateBarcode(e) {
+            e.preventDefault();
+            const rack = document.getElementById('bc-rack').value.trim().toUpperCase();
+            const shelf = document.getElementById('bc-shelf').value.trim().toUpperCase();
+            const locationCode = `${rack}-${shelf}`;
+            
+            updateBarcodeSVG(locationCode);
+        }
+
+        function updateBarcodeSVG(code) {
+            document.getElementById('barcode-txt-loc').innerText = code;
+            JsBarcode("#barcode-svg", code, {
+                format: "CODE128",
+                width: 2,
+                height: 60,
+                displayValue: false
+            });
+        }
+
+        function printBarcodePDF() {
+            const element = document.getElementById('barcode-print-target');
+            html2pdf().from(element).save('location-barcode.pdf');
+        }
+
+        // Invoice Engine Actions
+        function openInvoiceModal() {
+            if (!selectedOrderId) return;
+            const ord = orders.find(o => o.id === selectedOrderId);
+            if (!ord) return;
+
+            document.getElementById('inv-id').innerText = "#" + ord.id;
+            document.getElementById('inv-date').innerText = ord.date;
+            document.getElementById('inv-cust-name').innerText = ord.customer;
+            document.getElementById('inv-cust-address').innerText = ord.address;
+            document.getElementById('inv-cust-phone').innerText = "Phone: " + ord.phone;
+
+            const tbody = document.getElementById('inv-items-body');
+            tbody.innerHTML = '';
+
+            let subtotal = 0;
+            ord.items.forEach((item, idx) => {
+                const invItem = inventory[item.sku] || { name: "Custom Product" };
+                const itemTotal = item.qty * item.price;
+                subtotal += itemTotal;
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="p-3 text-gray-500">${idx + 1}</td>
+                    <td class="p-3">
+                        <p class="font-bold text-gray-800">${invItem.name}</p>
+                        <p class="text-xs text-gray-400 font-mono">${item.sku}</p>
+                    </td>
+                    <td class="p-3 text-center font-semibold">${item.qty}</td>
+                    <td class="p-3 text-right">$${item.price.toFixed(2)}</td>
+                    <td class="p-3 text-right font-bold text-gray-800">$${itemTotal.toFixed(2)}</td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            document.getElementById('inv-subtotal').innerText = "$" + subtotal.toFixed(2);
+            document.getElementById('inv-total').innerText = "$" + subtotal.toFixed(2);
+
+            document.getElementById('invoice-modal').classList.remove('hidden');
+        }
+
+        function closeInvoiceModal() {
+            document.getElementById('invoice-modal').classList.add('hidden');
+        }
+
+        function triggerInvoicePrint() {
+            const element = document.getElementById('print-area');
+            html2pdf().from(element).save(`Invoice-${selectedOrderId || 'Document'}.pdf`);
+        }
+    </script>
+</body>
+</html>
