@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Warehouse Order & Inventory Management System</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- JsBarcode for generating barcodes -->
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <!-- html2pdf for printing invoices and barcodes -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        @media print {
+            body * { visibility: hidden; }
+            #print-area, #print-area * { visibility: visible; }
+            #print-area { position: absolute; left: 0; top: 0; width: 100%; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans text-gray-800">
+
+    <!-- Top Navigation Bar -->
+    <nav class="bg-indigo-600 text-white p-4 shadow-md flex justify-between items-center">
+        <h1 class="text-xl font-bold flex items-center gap-2">
+            📦 LogiTrack OS <span class="text-xs bg-indigo-500 px-2 py-1 rounded">v1.0</span>
+        </h1>
+        <div class="flex gap-4">
+            <button onclick="switchTab('orders-tab')" class="hover:bg-indigo-700 px-3 py-2 rounded transition font-medium">Orders Dashboard</button>
+            <button onclick="switchTab('inventory-tab')" class="hover:bg-indigo-700 px-3 py-2 rounded transition font-medium">Cycle Count & Inventory</button>
+            <button onclick="switchTab('barcode-tab')" class="hover:bg-indigo-700 px-3 py-2 rounded transition font-medium">Location Barcode Generator</button>
+        </div>
+    </nav>
+
+    <div class="container mx-auto p-6 max-w-7xl">
+        
+        <!-- ================= ORDERS DASHBOARD TAB ================= -->
+        <section id="orders-tab" class="tab-content">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-900">Incoming Shopify Orders</h2>
+                <button onclick="simulateIncomingOrder()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition shadow">
+                    🔌 Simulate Shopify Webhook Order
+                </button>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Orders List -->
+                <div class="lg:col-span-1 bg-white p-4 rounded-xl shadow border border-gray-200 h-[600px] overflow-y-auto">
+                    <h3 class="font-bold text-gray-700 mb-3 border-b pb-2">Orders Queue</h3>
+                    <div id="order-list" class="space-y-3">
+                        <!-- Loaded dynamically -->
+                    </div>
+                </div>
+                
+                <!-- Order Detail & Picking View -->
+                <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow border border-gray-200 min-h-[600px] flex flex-col justify-between">
+                    <div id="order-details-blank" class="text-center my-auto text-gray-400">
+                        <p class="text-lg">Select an active order from the left panel to begin picking.</p>
+                    </div>
+                    
+                    <div id="order-details-content" class="hidden flex-1 flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-start border-b pb-4 mb-4">
+                                <div>
+                                    <h3 class="text-xl font-bold text-indigo-600" id="det-order-id">#ORD-1001</h3>
+                                    <p class="text-sm text-gray-500" id="det-order-date">Date: 2026-07-24</p>
+                                </div>
+                                <span id="det-status" class="px-3 py-1 rounded-full text-xs font-semibold"></span>
+                            </div>
+                            
+                            <!-- Customer Info -->
+                            <div class="bg-gray-50 p-4 rounded-lg mb-6 grid grid-cols-2 gap-4 text-sm">
+                                <div>
+                                    <p class="font-semibold text-gray-500 uppercase tracking-wider text-xs">Customer Details</p>
+                                    <p class="font-bold text-gray-800 mt-1" id="det-cust-name">John Doe</p>
+                                    <p class="text-gray-600" id="det-cust-phone">+1 (555) 019-2834</p>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-gray-500 uppercase tracking-wider text-xs">Shipping Address</p>
+                                    <p class="text-gray-600 mt-1 whitespace-pre-line" id="det-cust-address">123 Logistics Way, Suite 4B, New York, NY 10001</p>
+                                </div>
+                            </div>
+
+                            <!-- Items List -->
+                            <h4 class="font-bold text-gray-700 mb-2">Line Items (Click item to reveal location)</h4>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left text-sm border-collapse">
+                                    <thead>
+                                        <tr class="bg-gray-100 border-b border-gray-200">
+                                            <th class="p-3 font-semibold text-gray-600">Item Description</th>
+                                            <th class="p-3 font-semibold text-gray-600 text-center">Qty Ordered</th>
+                                            <th class="p-3 font-semibold text-gray-600">Location Guide</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="det-items-body">
+                                        <!-- Loaded dynamically -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="border-t pt-4 mt-6 flex gap-3 justify-end">
+                            <button id="btn-invoice" class="bg-gray-800 hover:bg-gray-900 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition hidden shadow">
+                                📄 Generate & Print Sales Invoice
+                            </button>
+                            <button id="btn-fulfill" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition shadow">
+                                ✔ Complete Fulfillment & Pick
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= CYCLE COUNT & INVENTORY TAB ================= -->
+        <section id="inventory-tab" class="tab-content hidden">
+            <div class="bg-white p-6 rounded-xl shadow border border-gray-200">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900">Inventory Cycle Counting</h2>
+                        <p class="text-sm text-gray-500">Real-time dynamic tracking of your items across assigned rack and shelf locations.</p>
+                    </div>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-100 border-b border-gray-200 text-sm font-semibold text-gray-600">
+                                <th class="p-4">SKU Code</th>
+                                <th class="p-4">Item Name</th>
+                                <th class="p-4">Warehouse Location Assignment</th>
+                                <th class="p-4 text-center">Current Stock Level</th>
+                                <th class="p-4">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventory-table-body" class="text-sm divide-y divide-gray-100">
+                            <!-- Loaded dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= BARCODE GENERATOR TAB ================= -->
+        <section id="barcode-tab" class="tab-content hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Barcode Generation Inputs -->
+                <div class="lg:col-span-1 bg-white p-6 rounded-xl shadow border border-gray-200">
+                    <h2 class="text-xl font-bold text-gray-900 mb-4">Location Barcode Generator</h2>
+                    <form id="barcode-form" onsubmit="generateBarcode(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Rack Number / Identifier</label>
+                            <input type="text" id="bc-rack" placeholder="e.g., RACK-A" class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none text-sm" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Shelf Number / Level</label>
+                            <input type="text" id="bc-shelf" placeholder="e.g., SHELF-03" class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none text-sm" required>
+                        </div>
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-lg text-sm font-medium transition shadow">
+                            Generate Barcode Label
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Preview Sheet / Print Engine Output -->
+                <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow border border-gray-200 flex flex-col justify-between">
+                    <div>
+                        <h3 class="font-bold text-gray-700 mb-4 border-b pb-2">Label Printable Output Preview</h3>
+                        <div class="flex justify-center items-center bg-gray-50 border border-dashed border-gray-300 rounded-xl p-8 min-h-[250px]">
+                            <div id="barcode-print-target" class="bg-white p-6 border shadow-sm text-center w-72 flex flex-col items-center justify-center">
+                                <p class="text-xs uppercase tracking-widest text-gray-400 font-bold mb-2">Location Identifier</p>
+                                <h4 id="barcode-txt-loc" class="text-lg font-black tracking-wider text-indigo-700 mb-3">LOC-NONE</h4>
+                                <svg id="barcode-svg"></svg>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex justify-end">
+                        <button onclick="printBarcodePDF()" class="bg-gray-800 hover:bg-gray-900 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition shadow">
+                            🖨️ Export & Print Barcode PDF
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- ================= INVOICE PRINT MODAL & VIEW (HIDDEN IN APP, VISIBLE ON PRINT) ================= -->
+    <div id="invoice-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden overflow-y-auto p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full p-8 relative flex flex-col max-h-[90vh]">
+            <button onclick="closeInvoiceModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl font-bold">&times;</button>
+            
+            <!-- Dynamic PDF Wrapper Container -->
+            <div id="print-area" class="overflow-y-auto pr-2 flex-1 p-4 bg-white">
+                <!-- Invoice Document Body Header -->
+                <div class="flex justify-between items-start border-b-2 border-gray-200 pb-6 mb-6">
+                    <div>
+                        <!-- Embedded Placeholder Vector Logo representing "Our Company" -->
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="h-8 w-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-black text-lg">L</span>
+                            <span class="text-xl font-black text-gray-900 tracking-tight">LOGIX GLOBAL LTD.</span>
+                        </div>
+                        <p class="text-xs text-gray-500">100 Logistics Terminal, Dock 4 Warehouse District</p>
+                        <p class="text-xs text-gray-500">Contact: fulfillment@logixglobal.xyz | +1 (800) 555-0100</p>
+                    </div>
+                    <div class="text-right">
+                        <h1 class="text-3xl font-black text-gray-400 tracking-wide uppercase mb-1">Sales Invoice</h1>
+                        <p class="text-sm font-bold text-gray-700">Invoice Reference: <span id="inv-id">#1001</span></p>
+                        <p class="text-xs text-gray-500">Date Issued: <span id="inv-date">2026-07-24</span></p>
+                    </div>
+                </div>
+
+                <!-- Addresses Structure Grid -->
+                <div class="grid grid-cols-2 gap-8 mb-8 text-sm">
+                    <div>
+                        <h5 class="font-bold text-gray-400 uppercase text-xs mb-2 tracking-wider">Bill & Ship To:</h5>
+                        <p class="font-bold text-gray-900 text-base" id="inv-cust-name">Customer Name</p>
+                        <p class="text-gray-600 mt-1 whitespace-pre-line leading-relaxed" id="inv-cust-address">Customer Address</p>
+                        <p class="text-gray-700 font-medium mt-1" id="inv-cust-phone">Phone: -</p>
+                    </div>
+                </div>
+
+                <!-- Products Table Mapping -->
+                <table class="w-full text-left text-sm border-collapse mb-8">
+                    <thead>
+                        <tr class="bg-gray-800 text-white font-semibold uppercase text-xs tracking-wider">
+                            <th class="p-3 rounded-l">Sr No.</th>
+                            <th class="p-3">Item Description</th>
+                            <th class="p-3 text-center">Qty</th>
+                            <th class="p-3 text-right">Unit Price</th>
+                            <th class="p-3 text-right rounded-r">Total Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inv-items-body" class="divide-y divide-gray-200">
+                        <!-- Loaded dynamically -->
+                    </tbody>
+                </table>
+
+                <!-- Total Summary Block -->
+                <div class="flex justify-end mb-8">
+                    <div class="w-64 text-sm space-y-2">
+                        <div class="flex justify-between text-gray-600">
+                            <span>Subtotal:</span>
+                            <span id="inv-subtotal">$0.00</span>
+                        </div>
+                        <div class="flex justify-between text-gray-600">
+                            <span>Tax Assessment (0%):</span>
+                            <span>$0.00</span>
+                        </div>
+                        <div class="flex justify-between border-t border-gray-300 pt-2 font-bold text-lg text-gray-900">
+                            <span>Grand Total:</span>
+                            <span id="inv-total">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dynamic Terms and Conditions Section -->
+                <div class="border-t pt-4 mt-8 bg-gray-50 p-4 rounded-lg">
+                    <h5 class="text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Terms, Agreements & Declarations:</h5>
+                    <p class="text-[11px] text-gray-500 leading-relaxed">
+                        1. All goods items delivered remain the legal property of the issuing seller company until total invoice accounts balances are fully paid off in execution.<br>
+                        2. Claims, damage events or errors regarding item quantities must be flagged down immediately within 48 business hours post receiving date records.<br>
+                        3. Returns parameters are processed purely against authorization certificates according to global company service line agreements.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Modal Bottom Control Row -->
+            <div class="mt-4 pt-4 border-t flex justify-end gap-3">
+                <button onclick="closeInvoiceModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg text-sm font-medium transition">
+                    Close Window
+                </button>
+                <button onclick="triggerInvoicePrint()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition shadow">
+                    🖨️ Print Invoice Document PDF
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= APP LOGIC SYSTEM INTERFACE JAVASCRIPT ================= -->
+    <script>
+        // Centralized Master Inventory State Registry
+        let inventory = {
+            "SKU-PRO-MAX": { name: "Pro Wireless Mechanical Keyboard", location: "RACK-A-SHELF-01", stock: 45 },
+            "SKU-MOU-ERG": { name: "Ergonomic Precision Trackball Mouse", location: "RACK-A-SHELF-02", stock: 120 },
+            "SKU-MON-4K":  { name: "32 UltraWide Cinema 4K Monitor", location: "RACK-B-SHELF-01", stock: 14 },
+            "SKU-CAB-USB": { name: "Braided High-Speed USB-C Cable 2m", location: "RACK-C-SHELF-05", stock: 650 }
+        };
+
+        // Master Orders Registry mock database
+        let orders = [
+            {
+                id: "ORD-9482",
+                date: "2026-07-24 10:14",
+                customer: "Alice Vance",
+                phone: "+1 (555) 014-9922",
+                address: "742 Evergreen Terrace\nSpringfield, OR 97477",
+                status: "Pending Pick",
+                items: [
+                    { sku: "SKU-PRO-MAX", qty: 1, price: 129.99 },
+                    { sku: "SKU-CAB-USB", qty: 3, price: 12.50 }
+                ]
+            },
+            {
+                id: "ORD-9483",
+                date: "2026-07-24 11:45",
+                customer: "Robert Chen",
+                phone: "+1 (555) 987-6543",
+                address: "888 Innovation Boulevard, Apt 12F\nSan Jose, CA 95112",
+                status: "Pending Pick",
+                items: [
+                    { sku: "SKU-MOU-ERG", qty: 2, price: 89.00 },
+                    { sku: "SKU-MON-4K", qty: 1, price: 449.99 }
+                ]
+            }
+        ];
+
+        let selectedOrderId = null;
+
+        // Initialization Run
+        window.addEventListener('DOMContentLoaded', () => {
+            renderOrdersList();
+            renderCycleCountTable();
+            generateDefaultBarcode();
+        });
+
+        // Tab Switching Engine Router
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
+        }
+
+        // Shopify Webhook Simulating Component
+        function simulateIncomingOrder() {
+            const mockIds = ["9484", "9485", "9486", "9487"];
+            const randId = "ORD-" + mockIds[Math.
