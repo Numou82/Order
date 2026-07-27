@@ -8,12 +8,10 @@
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <!-- JsBarcode for generating barcodes -->
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
-    <!-- html2pdf for printing invoices and barcodes -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         @media print {
-            body * { visibility: hidden; }
-            #print-area, #print-area * { visibility: visible; }
+            body * { visibility: hidden !important; }
+            #print-area, #print-area * { visibility: visible !important; }
             #print-area { position: absolute; left: 0; top: 0; width: 100%; }
         }
     </style>
@@ -179,8 +177,8 @@
                         </div>
                     </div>
                     <div class="mt-4 flex justify-end">
-                        <button onclick="printBarcodePDF()" class="bg-gray-800 hover:bg-gray-900 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition shadow cursor-pointer">
-                            🖨️ Export & Print Barcode PDF
+                        <button onclick="window.print()" class="bg-gray-800 hover:bg-gray-900 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition shadow cursor-pointer">
+                            🖨️ Print Barcode Label
                         </button>
                     </div>
                 </div>
@@ -195,6 +193,10 @@
             <button onclick="closeAddItemModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl font-bold">&times;</button>
             <h3 class="text-xl font-bold text-gray-900 mb-4">Add Item to Location</h3>
             <form onsubmit="handleAddItemSubmit(event)" class="space-y-4">
+                <div class="bg-indigo-50 p-3 rounded-lg border border-indigo-100 mb-2">
+                    <label class="block text-xs font-bold text-indigo-900 uppercase mb-1">📷 Barcode Scan (Auto Location Assign)</label>
+                    <input type="text" id="add-scan" oninput="handleBarcodeScan(this.value)" placeholder="Scan shelf label e.g., RACK-A-SHELF-01" class="w-full p-2 border border-indigo-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none font-mono">
+                </div>
                 <div>
                     <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">SKU Code</label>
                     <input type="text" id="add-sku" placeholder="e.g., SKU-HDM-CBL" class="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" required>
@@ -302,7 +304,7 @@
                 <button onclick="closeInvoiceModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg text-sm font-medium transition cursor-pointer">
                     Close Window
                 </button>
-                <button onclick="triggerInvoicePrint()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition shadow cursor-pointer">
+                <button onclick="window.print()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition shadow cursor-pointer">
                     🖨️ Print Invoice Document PDF
                 </button>
             </div>
@@ -494,13 +496,24 @@
             });
         }
 
-        // Add Item Modal Actions
+        // Add Item Modal Actions & Barcode Parser
         function openAddItemModal() {
             document.getElementById('add-item-modal').classList.remove('hidden');
         }
 
         function closeAddItemModal() {
             document.getElementById('add-item-modal').classList.add('hidden');
+        }
+
+        function handleBarcodeScan(value) {
+            const val = value.trim().toUpperCase();
+            if (val.includes('SHELF')) {
+                const parts = val.split('-');
+                if (parts.length >= 4) {
+                    document.getElementById('add-rack').value = `${parts[0]}-${parts[1]}`;
+                    document.getElementById('add-shelf').value = `${parts[2]}-${parts[3]}`;
+                }
+            }
         }
 
         function handleAddItemSubmit(e) {
@@ -543,11 +556,6 @@
             });
         }
 
-        function printBarcodePDF() {
-            const element = document.getElementById('barcode-print-target');
-            html2pdf().from(element).save('location-barcode.pdf');
-        }
-
         // Invoice Engine Actions
         function openInvoiceModal() {
             if (!selectedOrderId) return;
@@ -562,23 +570,20 @@
 
             const tbody = document.getElementById('inv-items-body');
             tbody.innerHTML = '';
-
             let subtotal = 0;
+
             ord.items.forEach((item, idx) => {
-                const invItem = inventory[item.sku] || { name: "Custom Product" };
-                const itemTotal = item.qty * item.price;
-                subtotal += itemTotal;
+                const invItem = inventory[item.sku] || { name: "Item" };
+                const total = item.qty * item.price;
+                subtotal += total;
 
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td class="p-3 text-gray-500">${idx + 1}</td>
-                    <td class="p-3">
-                        <p class="font-bold text-gray-800">${invItem.name}</p>
-                        <p class="text-xs text-gray-400 font-mono">${item.sku}</p>
-                    </td>
-                    <td class="p-3 text-center font-semibold">${item.qty}</td>
+                    <td class="p-3">${idx + 1}</td>
+                    <td class="p-3 font-semibold">${invItem.name} <br><span class="text-xs font-mono font-normal text-gray-400">${item.sku}</span></td>
+                    <td class="p-3 text-center">${item.qty}</td>
                     <td class="p-3 text-right">$${item.price.toFixed(2)}</td>
-                    <td class="p-3 text-right font-bold text-gray-800">$${itemTotal.toFixed(2)}</td>
+                    <td class="p-3 text-right font-bold">$${total.toFixed(2)}</td>
                 `;
                 tbody.appendChild(row);
             });
@@ -591,11 +596,6 @@
 
         function closeInvoiceModal() {
             document.getElementById('invoice-modal').classList.add('hidden');
-        }
-
-        function triggerInvoicePrint() {
-            const element = document.getElementById('print-area');
-            html2pdf().from(element).save(`Invoice-${selectedOrderId || 'Document'}.pdf`);
         }
     </script>
 </body>
