@@ -10,17 +10,17 @@
 <body class="bg-slate-100 min-h-screen text-slate-800 font-sans">
 
   <!-- TOP NAV HEADER -->
-  <header class="bg-slate-900 text-white p-4 shadow-md">
+  <header class="bg-slate-900 text-white p-4 shadow-md border-b border-slate-800">
     <div class="max-w-7xl mx-auto flex justify-between items-center">
-      <h1 class="text-xl font-bold flex items-center gap-2">
-        📦 Fresh Distro Hub
+      <h1 class="text-xl font-bold flex items-center gap-2 tracking-wide">
+        📦 Fresh Distro Hub <span class="text-xs font-normal text-slate-400">Enterprise Edition</span>
       </h1>
       <div class="flex gap-2">
-        <button onclick="switchView('admin')" id="nav-admin-btn" class="px-4 py-2 text-sm font-semibold rounded bg-blue-600 text-white">
-          Admin Portal
+        <button onclick="switchView('admin')" id="nav-admin-btn" class="px-4 py-2 text-sm font-semibold rounded bg-blue-600 text-white shadow">
+          Admin / Dispatch Portal
         </button>
-        <button onclick="switchView('client')" id="nav-client-btn" class="px-4 py-2 text-sm font-semibold rounded bg-slate-700 text-slate-200">
-          Client Order Portal
+        <button onclick="switchView('client')" id="nav-client-btn" class="px-4 py-2 text-sm font-semibold rounded bg-slate-800 text-slate-300 hover:text-white">
+          Client Ordering Portal
         </button>
       </div>
     </div>
@@ -29,7 +29,7 @@
   <main class="max-w-7xl mx-auto p-4 md:p-6">
 
     <!-- ========================================== -->
-    <!-- 1. ADMIN PORTAL VIEW                      -->
+    <!-- 1. ADMIN / DISPATCH PORTAL VIEW            -->
     <!-- ========================================== -->
     <div id="admin-view" class="space-y-6">
 
@@ -45,10 +45,10 @@
           Pending Approvals <span id="pending-badge" class="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">0</span>
         </button>
         <button onclick="switchAdminTab('reports')" id="tab-rep-btn" class="pb-2 font-semibold text-gray-500 hover:text-gray-800">
-          Next Delivery Report
+          Grouped Delivery Reports
         </button>
         <button onclick="switchAdminTab('monthly')" id="tab-mon-btn" class="pb-2 font-semibold text-gray-500 hover:text-gray-800">
-          Monthly Client Matrix & MoM Comparison
+          Monthly Client Matrix & MoM
         </button>
       </div>
 
@@ -171,17 +171,19 @@
         </div>
       </div>
 
-      <!-- TAB 3: PENDING APPROVALS -->
+      <!-- TAB 3: PENDING APPROVALS & DISPATCH QUANTITY MODIFIER -->
       <div id="admin-approvals-tab" class="bg-white p-6 rounded-lg shadow hidden">
-        <h2 class="text-lg font-bold text-slate-900 mb-4">Pending Client Orders Requiring Approval</h2>
+        <h2 class="text-lg font-bold text-slate-900 mb-1">Pending Client Orders - Dispatch Approval</h2>
+        <p class="text-xs text-gray-500 mb-4">Set the deliverable quantity for each requested item before approving.</p>
         <div class="overflow-x-auto border rounded-lg">
           <table class="w-full text-left text-sm">
             <thead class="bg-slate-800 text-white text-xs uppercase">
               <tr>
                 <th class="p-3">Company</th>
                 <th class="p-3">Item Code & Name</th>
-                <th class="p-3">Qty Requested</th>
-                <th class="p-3">Stock On Hand</th>
+                <th class="p-3">Requested Qty</th>
+                <th class="p-3">Available Stock</th>
+                <th class="p-3">Deliverable Qty</th>
                 <th class="p-3">Delivery Date</th>
                 <th class="p-3">Actions</th>
               </tr>
@@ -193,7 +195,7 @@
         </div>
       </div>
 
-      <!-- TAB 4: NEXT DELIVERY REPORT & BEST SELLER -->
+      <!-- TAB 4: GROUPED DELIVERY REPORT & BEST SELLER -->
       <div id="admin-reports-tab" class="bg-white p-6 rounded-lg shadow hidden space-y-6">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="p-4 bg-amber-50 border border-amber-200 rounded-lg">
@@ -207,13 +209,16 @@
         </div>
 
         <div class="flex justify-between items-center border-t pt-4">
-          <h2 class="text-lg font-bold text-slate-900">Accepted Next Delivery Dispatch Schedule</h2>
+          <div>
+            <h2 class="text-lg font-bold text-slate-900">Next Delivery Schedule (Grouped by Company)</h2>
+            <p class="text-xs text-gray-500">Multiple orders from the same company consolidated into one delivery sheet.</p>
+          </div>
           <button onclick="window.print()" class="bg-slate-800 text-white px-3 py-1.5 text-xs font-bold rounded hover:bg-slate-700">
             🖨️ Print Dispatch List
           </button>
         </div>
         <div id="delivery-report-container" class="space-y-4">
-          <!-- Dynamically populated -->
+          <!-- Dynamically populated per company -->
         </div>
       </div>
 
@@ -256,40 +261,43 @@
     </div>
 
     <!-- ========================================== -->
-    <!-- 2. CLIENT ORDER PORTAL VIEW               -->
+    <!-- 2. CLIENT ORDER PORTAL (PROFESSIONAL DARK) -->
     <!-- ========================================== -->
     <div id="client-view" class="hidden max-w-3xl mx-auto space-y-6">
       
       <!-- Login Box -->
-      <div id="client-login-card" class="bg-white p-6 rounded-lg shadow">
-        <h2 class="text-lg font-bold text-slate-900 mb-1">Client Portal Login</h2>
-        <p class="text-xs text-gray-500 mb-4">Select your company and enter password to place orders.</p>
+      <div id="client-login-card" class="bg-slate-900 border border-slate-800 p-8 rounded-xl shadow-2xl text-slate-100">
+        <div class="text-center mb-6">
+          <span class="inline-block p-3 bg-blue-600/20 text-blue-400 rounded-full mb-2">🏢</span>
+          <h2 class="text-xl font-bold tracking-tight text-white">Client Portal Secure Login</h2>
+          <p class="text-xs text-slate-400 mt-1">Select your company credentials to access item catalog.</p>
+        </div>
         
-        <form onsubmit="handleClientLogin(event)" class="space-y-4">
+        <form onsubmit="handleClientLogin(event)" class="space-y-5">
           <div>
-            <label class="block text-xs font-bold uppercase text-gray-600 mb-1">Select Your Company</label>
-            <select id="login-company-select" class="w-full border p-2 rounded text-sm bg-white">
+            <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Select Your Company</label>
+            <select id="login-company-select" class="w-full border border-slate-700 bg-slate-800 text-white p-3 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
               <!-- Dynamically filled -->
             </select>
           </div>
           <div>
-            <label class="block text-xs font-bold uppercase text-gray-600 mb-1">Password</label>
-            <input type="password" id="login-password" required class="w-full border p-2 rounded text-sm" placeholder="Enter assigned password">
+            <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Password</label>
+            <input type="password" id="login-password" required class="w-full border border-slate-700 bg-slate-800 text-white p-3 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Enter assigned password">
           </div>
-          <button type="submit" class="w-full bg-blue-600 text-white font-bold py-2.5 rounded hover:bg-blue-700">
-            Log In to Order
+          <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-500 shadow-lg transition">
+            Log In to Ordering Hub
           </button>
         </form>
       </div>
 
       <!-- Order Form & Notifications (Hidden until login) -->
-      <div id="client-order-card" class="bg-white p-6 rounded-lg shadow hidden space-y-6">
-        <div class="flex justify-between items-center border-b pb-3">
+      <div id="client-order-card" class="bg-slate-900 border border-slate-800 p-8 rounded-xl shadow-2xl text-slate-100 hidden space-y-6">
+        <div class="flex justify-between items-center border-b border-slate-800 pb-4">
           <div>
-            <span class="text-xs text-gray-500 uppercase font-bold">Logged In As</span>
-            <h2 id="active-client-name" class="text-lg font-bold text-blue-700">Company Name</h2>
+            <span class="text-xs text-blue-400 font-bold uppercase tracking-widest">Authenticated Client</span>
+            <h2 id="active-client-name" class="text-xl font-bold text-white">Company Name</h2>
           </div>
-          <button onclick="logoutClient()" class="text-xs text-red-600 underline font-semibold">Logout</button>
+          <button onclick="logoutClient()" class="text-xs bg-slate-800 hover:bg-slate-700 text-red-400 px-3 py-1.5 rounded font-semibold transition">Sign Out</button>
         </div>
 
         <!-- Notification Feed -->
@@ -297,45 +305,48 @@
           <!-- Live order alerts shown here -->
         </div>
 
-        <form onsubmit="handlePlaceOrder(event)" class="space-y-4 border-t pt-4">
-          <h3 class="text-sm font-bold text-slate-800 uppercase">Place New Order</h3>
+        <form onsubmit="handlePlaceOrder(event)" class="space-y-4 border-t border-slate-800 pt-4">
+          <h3 class="text-sm font-bold text-slate-300 uppercase tracking-wider">Place New Food Supply Order</h3>
           
           <div>
-            <label class="block text-xs font-bold uppercase text-gray-600 mb-1">Select Item (Code - Name | Origin | Stock)</label>
-            <select id="order-item-select" class="w-full border p-2 rounded text-sm bg-white">
-              <!-- Dynamically filled -->
+            <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Select Item (Item Name - Code | Origin)</label>
+            <select id="order-item-select" class="w-full border border-slate-700 bg-slate-800 text-white p-3 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+              <!-- Dynamically filled without stock details -->
             </select>
           </div>
 
-          <div>
-            <label class="block text-xs font-bold uppercase text-gray-600 mb-1">Order Quantity</label>
-            <input type="number" id="order-quantity" min="1" value="10" required class="w-full border p-2 rounded text-sm">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Requested Quantity</label>
+              <input type="number" id="order-quantity" min="1" value="10" required class="w-full border border-slate-700 bg-slate-800 text-white p-3 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Requested Delivery Date</label>
+              <input type="date" id="order-date" required class="w-full border border-slate-700 bg-slate-800 text-white p-3 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+            </div>
           </div>
 
-          <div>
-            <label class="block text-xs font-bold uppercase text-gray-600 mb-1">Delivery Date</label>
-            <input type="date" id="order-date" required class="w-full border p-2 rounded text-sm">
-          </div>
-
-          <button type="submit" id="submit-order-btn" class="w-full bg-green-600 text-white font-bold py-2.5 rounded hover:bg-green-700">
-            Submit Order for Approval
+          <button type="submit" id="submit-order-btn" class="w-full bg-emerald-600 text-white font-bold py-3 rounded-lg hover:bg-emerald-500 shadow-lg transition">
+            Submit Order for Dispatch Approval
           </button>
         </form>
 
         <!-- Client Order History -->
-        <div class="border-t pt-4">
-          <h3 class="text-sm font-bold text-slate-800 uppercase mb-3">Your Recent Orders & Status</h3>
-          <div class="overflow-x-auto border rounded-lg">
+        <div class="border-t border-slate-800 pt-4">
+          <h3 class="text-sm font-bold text-slate-300 uppercase tracking-wider mb-3">Order History & Approved Delivery Qty</h3>
+          <div class="overflow-x-auto border border-slate-800 rounded-lg bg-slate-950">
             <table class="w-full text-left text-xs">
-              <thead class="bg-slate-800 text-white uppercase">
+              <thead class="bg-slate-800 text-slate-300 uppercase">
                 <tr>
-                  <th class="p-2">Item</th>
-                  <th class="p-2">Qty</th>
-                  <th class="p-2">Delivery Date</th>
-                  <th class="p-2">Status</th>
+                  <th class="p-3">Item Name</th>
+                  <th class="p-3">Req Qty</th>
+                  <th class="p-3 text-emerald-400">Approved Qty</th>
+                  <th class="p-3">Delivery Date</th>
+                  <th class="p-3">Status</th>
                 </tr>
               </thead>
-              <tbody id="client-order-history" class="divide-y divide-gray-200">
+              <tbody id="client-order-history" class="divide-y divide-slate-800 text-slate-300">
                 <!-- Dynamically populated -->
               </tbody>
             </table>
@@ -389,7 +400,7 @@
     let inventory = [
       { code: 'FD-101', name: 'Fresh Milk (1L Bottle)', origin: 'New Zealand', unitPrice: 3.50, stock: 500, outToday: 0 },
       { code: 'FD-102', name: 'Grade A Eggs (Tray 30)', origin: 'USA', unitPrice: 6.00, stock: 1200, outToday: 0 },
-      { code: 'FD-103', name: 'Whole Wheat Bread (Sliced)', origin: 'Local Bakery', unitPrice: 2.20, stock: 0, outToday: 0 }, // Out of stock example
+      { code: 'FD-103', name: 'Whole Wheat Bread (Sliced)', origin: 'Local Bakery', unitPrice: 2.20, stock: 0, outToday: 0 }, // Out of stock
       { code: 'FD-104', name: 'Cheddar Cheese Block (1kg)', origin: 'France', unitPrice: 12.00, stock: 450, outToday: 0 }
     ];
 
@@ -402,7 +413,8 @@
         address: '123 Ocean Drive, Bay Area',
         itemCode: 'FD-101',
         itemName: 'Fresh Milk (1L Bottle)',
-        quantity: 50,
+        requestedQty: 50,
+        approvedQty: 50,
         unitPrice: 3.50,
         deliveryDate: '2026-08-09',
         status: 'Approved' // Pending, Approved, Rejected
@@ -420,12 +432,12 @@
       document.getElementById('client-view').classList.toggle('hidden', view !== 'client');
       
       document.getElementById('nav-admin-btn').className = view === 'admin' 
-        ? 'px-4 py-2 text-sm font-semibold rounded bg-blue-600 text-white' 
-        : 'px-4 py-2 text-sm font-semibold rounded bg-slate-700 text-slate-200';
+        ? 'px-4 py-2 text-sm font-semibold rounded bg-blue-600 text-white shadow' 
+        : 'px-4 py-2 text-sm font-semibold rounded bg-slate-800 text-slate-300 hover:text-white';
       
       document.getElementById('nav-client-btn').className = view === 'client' 
-        ? 'px-4 py-2 text-sm font-semibold rounded bg-blue-600 text-white' 
-        : 'px-4 py-2 text-sm font-semibold rounded bg-slate-700 text-slate-200';
+        ? 'px-4 py-2 text-sm font-semibold rounded bg-blue-600 text-white shadow' 
+        : 'px-4 py-2 text-sm font-semibold rounded bg-slate-800 text-slate-300 hover:text-white';
 
       if (view === 'client') updateClientSelectDropdown();
     }
@@ -466,17 +478,16 @@
       renderTables();
     }
 
-    // --- CLIENT LOGIN & ORDERING ---
+    // --- CLIENT LOGIN & ORDERING (HIDDEN STOCK FROM CLIENT) ---
     function updateClientSelectDropdown() {
       const select = document.getElementById('login-company-select');
       select.innerHTML = companies.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
       
       const itemSelect = document.getElementById('order-item-select');
+      // Stock quantity is completely hidden from client view
       itemSelect.innerHTML = inventory.map(i => {
-        const remaining = i.stock - i.outToday;
-        const isOutOfStock = remaining <= 0;
-        return `<option value="${i.code}" ${isOutOfStock ? 'disabled class="text-red-400 bg-gray-100"' : ''}>
-          [${i.code}] ${i.name} (Origin: ${i.origin}) - ${isOutOfStock ? 'OUT OF STOCK' : 'Stock: ' + remaining}
+        return `<option value="${i.code}">
+          ${i.name} [Code: ${i.code}] - Origin: ${i.origin}
         </option>`;
       }).join('');
     }
@@ -513,12 +524,6 @@
 
       const item = inventory.find(i => i.code === itemCode);
       if (item) {
-        const remaining = item.stock - item.outToday;
-        if (quantity > remaining) {
-          alert(`Cannot place order! Only ${remaining} units remaining in stock.`);
-          return;
-        }
-
         orders.push({
           id: 'ord-' + Date.now().toString().slice(-4),
           companyId: loggedInCompany.id,
@@ -527,43 +532,61 @@
           address: loggedInCompany.address,
           itemCode: item.code,
           itemName: item.name,
-          quantity: quantity,
+          requestedQty: quantity,
+          approvedQty: 0,
           unitPrice: item.unitPrice,
           deliveryDate: deliveryDate,
           status: 'Pending'
         });
 
-        alert(`Order submitted successfully! Awaiting Admin Acceptance.`);
+        alert(`Order submitted successfully! Awaiting dispatch approval.`);
         renderClientView();
         renderTables();
       }
     }
 
-    // --- APPROVAL ACTIONS ---
-    function approveOrder(orderId) {
+    // --- APPROVAL & PARTIAL DISPATCH ACTIONS ---
+    function approveOrderWithQty(orderId) {
       const order = orders.find(o => o.id === orderId);
-      if (order) {
-        const item = inventory.find(i => i.code === order.itemCode);
-        if (item) {
-          item.outToday += order.quantity;
-          order.status = 'Approved';
+      if (!order) return;
 
-          // Update client march metrics
-          const client = companies.find(c => c.id === order.companyId);
-          if (client) {
-            client.monthly.mar.qty += order.quantity;
-            client.monthly.mar.amount += (order.quantity * order.unitPrice);
-          }
-        }
-        renderTables();
-        if (loggedInCompany) renderClientView();
+      const inputElement = document.getElementById(`deliver-qty-${orderId}`);
+      const deliverableQty = parseInt(inputElement.value);
+
+      if (isNaN(deliverableQty) || deliverableQty < 0) {
+        alert('Please enter a valid deliverable quantity.');
+        return;
       }
+
+      const item = inventory.find(i => i.code === order.itemCode);
+      if (item) {
+        const availableStock = item.stock - item.outToday;
+        if (deliverableQty > availableStock) {
+          alert(`Cannot deliver ${deliverableQty} units! Only ${availableStock} units available in stock.`);
+          return;
+        }
+
+        item.outToday += deliverableQty;
+        order.approvedQty = deliverableQty;
+        order.status = 'Approved';
+
+        // Update client monthly performance metrics
+        const client = companies.find(c => c.id === order.companyId);
+        if (client) {
+          client.monthly.mar.qty += deliverableQty;
+          client.monthly.mar.amount += (deliverableQty * order.unitPrice);
+        }
+      }
+
+      renderTables();
+      if (loggedInCompany) renderClientView();
     }
 
     function rejectOrder(orderId) {
       const order = orders.find(o => o.id === orderId);
       if (order) {
         order.status = 'Rejected';
+        order.approvedQty = 0;
         renderTables();
         if (loggedInCompany) renderClientView();
       }
@@ -580,30 +603,32 @@
 
       notifBox.innerHTML = '';
       if (latestApproved.length > 0) {
+        const lastApp = latestApproved[latestApproved.length - 1];
         notifBox.innerHTML += `
-          <div class="p-3 bg-green-100 border border-green-300 text-green-800 rounded text-xs flex justify-between items-center">
-            <span>✅ <strong>Order Accepted!</strong> Your recent order for ${latestApproved[latestApproved.length - 1].itemName} has been accepted by dispatch.</span>
+          <div class="p-3 bg-emerald-950 border border-emerald-800 text-emerald-300 rounded text-xs flex justify-between items-center">
+            <span>✅ <strong>Order Accepted!</strong> Order for ${lastApp.itemName} has been approved for delivery of <strong>${lastApp.approvedQty} units</strong> on ${lastApp.deliveryDate}.</span>
           </div>
         `;
       }
       if (latestRejected.length > 0) {
         notifBox.innerHTML += `
-          <div class="p-3 bg-red-100 border border-red-300 text-red-800 rounded text-xs flex justify-between items-center">
-            <span>⚠️ <strong>Order Declined:</strong> Order for ${latestRejected[latestRejected.length - 1].itemName} could not be fulfilled.</span>
+          <div class="p-3 bg-red-950 border border-red-800 text-red-300 rounded text-xs flex justify-between items-center">
+            <span>⚠️ <strong>Order Declined:</strong> Order for ${latestRejected[latestRejected.length - 1].itemName} could not be fulfilled at this time.</span>
           </div>
         `;
       }
 
-      // Order History
+      // Order History Table
       document.getElementById('client-order-history').innerHTML = myOrders.map(o => `
         <tr>
-          <td class="p-2 font-semibold">${o.itemName}</td>
-          <td class="p-2 font-mono">${o.quantity}</td>
-          <td class="p-2">${o.deliveryDate}</td>
-          <td class="p-2">
+          <td class="p-3 font-semibold text-slate-200">${o.itemName} <span class="text-slate-500">(${o.itemCode})</span></td>
+          <td class="p-3 font-mono">${o.requestedQty}</td>
+          <td class="p-3 font-mono font-bold text-emerald-400">${o.status === 'Approved' ? o.approvedQty : '-'}</td>
+          <td class="p-3">${o.deliveryDate}</td>
+          <td class="p-3">
             <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-              o.status === 'Approved' ? 'bg-green-100 text-green-800' : 
-              o.status === 'Rejected' ? 'bg-red-100 text-red-800' : 'bg-amber-100 text-amber-800'
+              o.status === 'Approved' ? 'bg-emerald-900/80 text-emerald-300 border border-emerald-700' : 
+              o.status === 'Rejected' ? 'bg-red-900/80 text-red-300 border border-red-700' : 'bg-amber-900/80 text-amber-300 border border-amber-700'
             }">${o.status}</span>
           </td>
         </tr>
@@ -660,7 +685,7 @@
       document.getElementById('summary-total-qty').innerText = totalQty + ' Units';
       document.getElementById('summary-total-val').innerText = '$' + totalVal.toLocaleString(undefined, {minimumFractionDigits: 2});
 
-      // 3. Render Approvals Queue
+      // 3. Render Approvals Queue with Dispatch Modifiable Qty
       const pendingOrders = orders.filter(o => o.status === 'Pending');
       document.getElementById('pending-badge').innerText = pendingOrders.length;
       document.getElementById('approvals-table-body').innerHTML = pendingOrders.map(o => {
@@ -668,20 +693,23 @@
         const stockOnHand = item ? (item.stock - item.outToday) : 0;
         return `
           <tr>
-            <td class="p-3 font-semibold">${o.companyName}</td>
+            <td class="p-3 font-semibold text-slate-900">${o.companyName}</td>
             <td class="p-3">[${o.itemCode}] ${o.itemName}</td>
-            <td class="p-3 font-bold text-blue-600">${o.quantity}</td>
+            <td class="p-3 font-bold text-blue-600">${o.requestedQty}</td>
             <td class="p-3 font-semibold">${stockOnHand}</td>
-            <td class="p-3">${o.deliveryDate}</td>
+            <td class="p-3">
+              <input type="number" id="deliver-qty-${o.id}" value="${Math.min(o.requestedQty, stockOnHand)}" min="1" max="${stockOnHand}" class="w-20 border p-1 rounded text-center font-bold text-slate-800">
+            </td>
+            <td class="p-3 text-xs text-gray-600">${o.deliveryDate}</td>
             <td class="p-3 space-x-2">
-              <button onclick="approveOrder('${o.id}')" class="bg-green-600 text-white text-xs px-2.5 py-1 rounded font-bold hover:bg-green-700">Accept</button>
+              <button onclick="approveOrderWithQty('${o.id}')" class="bg-green-600 text-white text-xs px-2.5 py-1 rounded font-bold hover:bg-green-700">Approve & Deliver</button>
               <button onclick="rejectOrder('${o.id}')" class="bg-red-600 text-white text-xs px-2.5 py-1 rounded font-bold hover:bg-red-700">Decline</button>
             </td>
           </tr>
         `;
       }).join('');
       if (pendingOrders.length === 0) {
-        document.getElementById('approvals-table-body').innerHTML = '<tr><td colSpan="6" class="p-4 text-center text-gray-500">No pending orders waiting for approval.</td></tr>';
+        document.getElementById('approvals-table-body').innerHTML = '<tr><td colSpan="7" class="p-4 text-center text-gray-500">No pending orders waiting for dispatch approval.</td></tr>';
       }
 
       // 4. Render Best Seller & Top Customer
@@ -690,39 +718,66 @@
         // Calculate best item
         const itemTotals = {};
         approvedOrders.forEach(o => {
-          itemTotals[o.itemName] = (itemTotals[o.itemName] || 0) + o.quantity;
+          itemTotals[o.itemName] = (itemTotals[o.itemName] || 0) + o.approvedQty;
         });
         const bestItem = Object.keys(itemTotals).reduce((a, b) => itemTotals[a] > itemTotals[b] ? a : b);
-        document.getElementById('best-selling-item').innerText = `${bestItem} (${itemTotals[bestItem]} Units Sold)`;
+        document.getElementById('best-selling-item').innerText = `${bestItem} (${itemTotals[bestItem]} Units Delivered)`;
 
         // Top Customer
         const clientTotals = {};
         approvedOrders.forEach(o => {
-          clientTotals[o.companyName] = (clientTotals[o.companyName] || 0) + o.quantity;
+          clientTotals[o.companyName] = (clientTotals[o.companyName] || 0) + o.approvedQty;
         });
         const topClient = Object.keys(clientTotals).reduce((a, b) => clientTotals[a] > clientTotals[b] ? a : b);
-        document.getElementById('top-customer-name').innerText = `${topClient} (${clientTotals[topClient]} Total Qty)`;
+        document.getElementById('top-customer-name').innerText = `${topClient} (${clientTotals[topClient]} Units Received)`;
       }
 
-      // 5. Render Approved Delivery Report
+      // 5. Render Grouped Delivery Report by Company Name
       const reportContainer = document.getElementById('delivery-report-container');
       if (approvedOrders.length === 0) {
         reportContainer.innerHTML = '<p class="text-gray-500 text-sm">No accepted orders ready for dispatch.</p>';
       } else {
-        reportContainer.innerHTML = approvedOrders.map(o => `
-          <div class="border rounded-lg p-4 bg-slate-50 flex justify-between items-center">
-            <div>
-              <span class="text-xs font-bold text-blue-600 uppercase">Delivery Date: ${o.deliveryDate}</span>
-              <h3 class="font-bold text-slate-900 text-md">${o.companyName}</h3>
-              <p class="text-xs text-gray-600">📍 ${o.address} | 📞 Storekeeper: ${o.storekeeper}</p>
+        // Group orders by company name
+        const groupedByCompany = {};
+        approvedOrders.forEach(o => {
+          if (!groupedByCompany[o.companyName]) {
+            groupedByCompany[o.companyName] = {
+              address: o.address,
+              storekeeper: o.storekeeper,
+              deliveryDate: o.deliveryDate,
+              items: []
+            };
+          }
+          groupedByCompany[o.companyName].items.push(o);
+        });
+
+        reportContainer.innerHTML = Object.keys(groupedByCompany).map(companyName => {
+          const group = groupedByCompany[companyName];
+          return `
+            <div class="border border-slate-300 rounded-lg p-5 bg-slate-50 shadow-sm space-y-3">
+              <div class="flex justify-between items-start border-b border-slate-200 pb-2">
+                <div>
+                  <h3 class="font-extrabold text-slate-900 text-lg">${companyName}</h3>
+                  <p class="text-xs text-gray-600">📍 Address: ${group.address} | 📞 Storekeeper: ${group.storekeeper}</p>
+                </div>
+                <span class="text-xs font-bold bg-blue-600 text-white px-3 py-1 rounded-full uppercase">
+                  Delivery Date: ${group.deliveryDate}
+                </span>
+              </div>
+              <div class="space-y-1">
+                <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Consolidated Delivery Items:</span>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-1">
+                  ${group.items.map(item => `
+                    <div class="flex justify-between items-center bg-white border p-2 rounded text-xs">
+                      <span class="font-semibold text-slate-800">[${item.itemCode}] ${item.itemName}</span>
+                      <span class="font-mono font-extrabold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">${item.approvedQty} Units</span>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
             </div>
-            <div class="text-right">
-              <span class="text-sm font-mono font-bold bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                ${o.quantity}x [${o.itemCode}] ${o.itemName}
-              </span>
-            </div>
-          </div>
-        `).join('');
+          `;
+        }).join('');
       }
 
       // 6. Render Monthly Client Matrix & MoM Comparison
