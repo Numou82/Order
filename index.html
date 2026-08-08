@@ -1,602 +1,414 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Warehouse Order & Inventory Management System</title>
-    <!-- Tailwind CSS for styling -->
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <!-- JsBarcode for generating barcodes -->
-    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
-    <style>
-        @media print {
-            body * { visibility: hidden !important; }
-            #print-area, #print-area * { visibility: visible !important; }
-            #print-area { position: absolute; left: 0; top: 0; width: 100%; }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Food Distribution & Order System</title>
+  <!-- Tailwind CSS for styling -->
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-50 font-sans text-gray-800">
+<body class="bg-slate-100 min-h-screen text-slate-800 font-sans">
 
-    <!-- Top Navigation Bar -->
-    <nav class="bg-indigo-600 text-white p-4 shadow-md flex justify-between items-center">
-        <h1 class="text-xl font-bold flex items-center gap-2">
-            📦 LogiTrack OS <span class="text-xs bg-indigo-500 px-2 py-1 rounded">v1.0</span>
-        </h1>
-        <div class="flex gap-4">
-            <button onclick="switchTab('orders-tab')" class="hover:bg-indigo-700 px-3 py-2 rounded transition font-medium cursor-pointer">Orders Dashboard</button>
-            <button onclick="switchTab('inventory-tab')" class="hover:bg-indigo-700 px-3 py-2 rounded transition font-medium cursor-pointer">Cycle Count & Inventory</button>
-            <button onclick="switchTab('barcode-tab')" class="hover:bg-indigo-700 px-3 py-2 rounded transition font-medium cursor-pointer">Location Barcode Generator</button>
-        </div>
-    </nav>
+  <!-- TOP NAV HEADER -->
+  <header class="bg-slate-900 text-white p-4 shadow-md">
+    <div class="max-w-7xl mx-auto flex justify-between items-center">
+      <h1 class="text-xl font-bold flex items-center gap-2">
+        📦 Fresh Distro Hub
+      </h1>
+      <div class="flex gap-2">
+        <button onclick="switchView('admin')" id="nav-admin-btn" class="px-4 py-2 text-sm font-semibold rounded bg-blue-600 text-white">
+          Admin Portal
+        </button>
+        <button onclick="switchView('client')" id="nav-client-btn" class="px-4 py-2 text-sm font-semibold rounded bg-slate-700 text-slate-200">
+          Client Order Portal
+        </button>
+      </div>
+    </div>
+  </header>
 
-    <div class="container mx-auto p-6 max-w-7xl">
+  <main class="max-w-7xl mx-auto p-4 md:p-6">
+
+    <!-- ========================================== -->
+    <!-- 1. ADMIN PORTAL VIEW                      -->
+    <!-- ========================================== -->
+    <div id="admin-view" class="space-y-6">
+
+      <!-- Admin Sub-Navigation -->
+      <div class="flex border-b border-gray-300 gap-4">
+        <button onclick="switchAdminTab('register')" id="tab-reg-btn" class="pb-2 font-bold text-blue-600 border-b-2 border-blue-600">
+          + Register Client Company
+        </button>
+        <button onclick="switchAdminTab('inventory')" id="tab-inv-btn" class="pb-2 font-semibold text-gray-500 hover:text-gray-800">
+          Live Inventory Ledger (In/Out)
+        </button>
+        <button onclick="switchAdminTab('reports')" id="tab-rep-btn" class="pb-2 font-semibold text-gray-500 hover:text-gray-800">
+          Next Delivery Report
+        </button>
+      </div>
+
+      <!-- TAB 1: REGISTER CLIENT COMPANY -->
+      <div id="admin-register-tab" class="bg-white p-6 rounded-lg shadow">
+        <h2 class="text-lg font-bold text-slate-900 mb-4">Register New Supplier / Client Company</h2>
         
-        <!-- ================= ORDERS DASHBOARD TAB ================= -->
-        <section id="orders-tab" class="tab-content">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold text-gray-900">Incoming Shopify Orders</h2>
-                <button onclick="simulateIncomingOrder()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition shadow cursor-pointer">
-                    🔌 Simulate Shopify Webhook Order
-                </button>
-            </div>
-            
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Orders List -->
-                <div class="lg:col-span-1 bg-white p-4 rounded-xl shadow border border-gray-200 h-[600px] overflow-y-auto">
-                    <h3 class="font-bold text-gray-700 mb-3 border-b pb-2">Orders Queue</h3>
-                    <div id="order-list" class="space-y-3">
-                        <!-- Loaded dynamically -->
-                    </div>
-                </div>
-                
-                <!-- Order Detail & Picking View -->
-                <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow border border-gray-200 min-h-[600px] flex flex-col justify-between">
-                    <div id="order-details-blank" class="text-center my-auto text-gray-400">
-                        <p class="text-lg">Select an active order from the left panel to begin picking.</p>
-                    </div>
-                    
-                    <div id="order-details-content" class="hidden flex-1 flex flex-col justify-between">
-                        <div>
-                            <div class="flex justify-between items-start border-b pb-4 mb-4">
-                                <div>
-                                    <h3 class="text-xl font-bold text-indigo-600" id="det-order-id">#ORD-1001</h3>
-                                    <p class="text-sm text-gray-500" id="det-order-date">Date: 2026-07-24</p>
-                                </div>
-                                <span id="det-status" class="px-3 py-1 rounded-full text-xs font-semibold"></span>
-                            </div>
-                            
-                            <!-- Customer Info -->
-                            <div class="bg-gray-50 p-4 rounded-lg mb-6 grid grid-cols-2 gap-4 text-sm">
-                                <div>
-                                    <p class="font-semibold text-gray-500 uppercase tracking-wider text-xs">Customer Details</p>
-                                    <p class="font-bold text-gray-800 mt-1" id="det-cust-name">John Doe</p>
-                                    <p class="text-gray-600" id="det-cust-phone">+1 (555) 019-2834</p>
-                                </div>
-                                <div>
-                                    <p class="font-semibold text-gray-500 uppercase tracking-wider text-xs">Shipping Address</p>
-                                    <p class="text-gray-600 mt-1 whitespace-pre-line" id="det-cust-address">123 Logistics Way, Suite 4B, New York, NY 10001</p>
-                                </div>
-                            </div>
+        <form id="add-company-form" onsubmit="handleRegisterCompany(event)" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold uppercase text-gray-600 mb-1">Company Name *</label>
+            <input type="text" id="comp-name" required class="w-full border p-2 rounded text-sm" placeholder="e.g. Grand Bistro Restaurant">
+          </div>
 
-                            <!-- Items List -->
-                            <h4 class="font-bold text-gray-700 mb-2">Line Items (Click item to reveal location)</h4>
-                            <div class="overflow-x-auto">
-                                <table class="w-full text-left text-sm border-collapse">
-                                    <thead>
-                                        <tr class="bg-gray-100 border-b border-gray-200">
-                                            <th class="p-3 font-semibold text-gray-600">Item Description</th>
-                                            <th class="p-3 font-semibold text-gray-600 text-center">Qty Ordered</th>
-                                            <th class="p-3 font-semibold text-gray-600">Location Guide</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="det-items-body">
-                                        <!-- Loaded dynamically -->
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-gray-600 mb-1">Company Address *</label>
+            <input type="text" id="comp-address" required class="w-full border p-2 rounded text-sm" placeholder="Building No, Street, City">
+          </div>
 
-                        <!-- Action Buttons -->
-                        <div class="border-t pt-4 mt-6 flex gap-3 justify-end">
-                            <button id="btn-invoice" onclick="openInvoiceModal()" class="bg-gray-800 hover:bg-gray-900 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition shadow cursor-pointer">
-                                📄 Generate & Print Sales Invoice
-                            </button>
-                            <button id="btn-fulfill" onclick="fulfillCurrentOrder()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition shadow cursor-pointer">
-                                ✔ Complete Fulfillment & Pick
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
+          <div>
+            <label class="block text-xs font-bold uppercase text-gray-600 mb-1">Contact Person Name *</label>
+            <input type="text" id="comp-contact" required class="w-full border p-2 rounded text-sm" placeholder="John Doe">
+          </div>
 
-        <!-- ================= CYCLE COUNT & INVENTORY TAB ================= -->
-        <section id="inventory-tab" class="tab-content hidden">
-            <div class="bg-white p-6 rounded-xl shadow border border-gray-200">
-                <div class="flex justify-between items-center mb-6">
-                    <div>
-                        <h2 class="text-2xl font-bold text-gray-900">Inventory Cycle Counting</h2>
-                        <p class="text-sm text-gray-500">Real-time dynamic tracking of your items across assigned rack and shelf locations.</p>
-                    </div>
-                    <button onclick="openAddItemModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition shadow cursor-pointer">
-                        ➕ Add / Assign Item to Location
-                    </button>
-                </div>
-                
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-gray-100 border-b border-gray-200 text-sm font-semibold text-gray-600">
-                                <th class="p-4">SKU Code</th>
-                                <th class="p-4">Item Name</th>
-                                <th class="p-4">Warehouse Location Assignment</th>
-                                <th class="p-4 text-center">Current Stock Level</th>
-                                <th class="p-4">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="inventory-table-body" class="text-sm divide-y divide-gray-100">
-                            <!-- Loaded dynamically -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
+          <div>
+            <label class="block text-xs font-bold uppercase text-gray-600 mb-1">Email Address *</label>
+            <input type="email" id="comp-email" required class="w-full border p-2 rounded text-sm" placeholder="john@grandbistro.com">
+          </div>
 
-        <!-- ================= BARCODE GENERATOR TAB ================= -->
-        <section id="barcode-tab" class="tab-content hidden">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Barcode Generation Inputs -->
-                <div class="lg:col-span-1 bg-white p-6 rounded-xl shadow border border-gray-200">
-                    <h2 class="text-xl font-bold text-gray-900 mb-4">Location Barcode Generator</h2>
-                    <form id="barcode-form" onsubmit="generateBarcode(event)" class="space-y-4">
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Rack Number / Identifier</label>
-                            <input type="text" id="bc-rack" placeholder="e.g., RACK-A" class="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none text-sm" required>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Shelf Number / Level</label>
-                            <input type="text" id="bc-shelf" placeholder="e.g., SHELF-03" class="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none text-sm" required>
-                        </div>
-                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-lg text-sm font-medium transition shadow cursor-pointer">
-                            Generate Barcode Label
-                        </button>
-                    </form>
-                </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-gray-600 mb-1">Mobile No. *</label>
+            <input type="tel" id="comp-mobile" required class="w-full border p-2 rounded text-sm" placeholder="+123 456 7890">
+          </div>
 
-                <!-- Preview Sheet / Print Engine Output -->
-                <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow border border-gray-200 flex flex-col justify-between">
-                    <div>
-                        <h3 class="font-bold text-gray-700 mb-4 border-b pb-2">Label Printable Output Preview</h3>
-                        <div class="flex justify-center items-center bg-gray-50 border border-dashed border-gray-300 rounded-xl p-8 min-h-[250px]">
-                            <div id="barcode-print-target" class="bg-white p-6 border border-gray-200 shadow-sm text-center w-72 flex flex-col items-center justify-center rounded-lg">
-                                <p class="text-xs uppercase tracking-widest text-gray-400 font-bold mb-2">Location Identifier</p>
-                                <h4 id="barcode-txt-loc" class="text-lg font-black tracking-wider text-indigo-700 mb-3">LOC-NONE</h4>
-                                <svg id="barcode-svg"></svg>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="mt-4 flex justify-end">
-                        <button onclick="window.print()" class="bg-gray-800 hover:bg-gray-900 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition shadow cursor-pointer">
-                            🖨️ Print Barcode Label
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </section>
+          <div>
+            <label class="block text-xs font-bold uppercase text-gray-600 mb-1">Store Keeper Mobile No. *</label>
+            <input type="tel" id="comp-storekeeper" required class="w-full border p-2 rounded text-sm" placeholder="+123 987 6543">
+          </div>
 
-    </div>
+          <hr class="md:col-span-2 border-gray-200 my-2">
+          <h3 class="md:col-span-2 text-sm font-bold text-slate-800">Client Portal Login Credentials</h3>
 
-    <!-- ================= ADD ITEM TO LOCATION MODAL ================= -->
-    <div id="add-item-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden p-4">
-        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 relative">
-            <button onclick="closeAddItemModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl font-bold">&times;</button>
-            <h3 class="text-xl font-bold text-gray-900 mb-4">Add Item to Location</h3>
-            <form onsubmit="handleAddItemSubmit(event)" class="space-y-4">
-                <div class="bg-indigo-50 p-3 rounded-lg border border-indigo-100 mb-2">
-                    <label class="block text-xs font-bold text-indigo-900 uppercase mb-1">📷 Barcode Scan (Auto Location Assign)</label>
-                    <input type="text" id="add-scan" oninput="handleBarcodeScan(this.value)" placeholder="Scan shelf label e.g., RACK-A-SHELF-01" class="w-full p-2 border border-indigo-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none font-mono">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">SKU Code</label>
-                    <input type="text" id="add-sku" placeholder="e.g., SKU-HDM-CBL" class="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" required>
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Item Name</label>
-                    <input type="text" id="add-name" placeholder="e.g., Ultra HD HDMI Cable 3m" class="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" required>
-                </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Rack ID</label>
-                        <input type="text" id="add-rack" placeholder="RACK-A" class="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" required>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Shelf ID</label>
-                        <input type="text" id="add-shelf" placeholder="SHELF-01" class="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" required>
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Initial Stock Level</label>
-                    <input type="number" id="add-stock" min="1" placeholder="50" class="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" required>
-                </div>
-                <div class="pt-2 flex justify-end gap-3">
-                    <button type="button" onclick="closeAddItemModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg text-sm font-medium transition cursor-pointer">Cancel</button>
-                    <button type="submit" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition shadow cursor-pointer">Save & Assign</button>
-                </div>
-            </form>
+          <div>
+            <label class="block text-xs font-bold uppercase text-gray-600 mb-1">Assign Username *</label>
+            <input type="text" id="comp-user" required class="w-full border p-2 rounded text-sm bg-gray-50" placeholder="grandbistro_admin">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold uppercase text-gray-600 mb-1">Assign Password *</label>
+            <input type="password" id="comp-pass" required class="w-full border p-2 rounded text-sm bg-gray-50" placeholder="••••••••">
+          </div>
+
+          <div class="md:col-span-2 mt-2">
+            <button type="submit" class="w-full bg-green-600 text-white font-bold py-2.5 rounded hover:bg-green-700 transition">
+              Save Company & Create Account
+            </button>
+          </div>
+        </form>
+
+        <!-- Registered Companies List -->
+        <div class="mt-8">
+          <h3 class="font-bold text-slate-800 text-md mb-3">Registered Client Companies (<span id="comp-count">1</span>/30)</h3>
+          <div class="overflow-x-auto border rounded-lg">
+            <table class="w-full text-left text-sm">
+              <thead class="bg-slate-800 text-white text-xs uppercase">
+                <tr>
+                  <th class="p-3">Company</th>
+                  <th class="p-3">Contact Person</th>
+                  <th class="p-3">Email & Mobile</th>
+                  <th class="p-3">Store Keeper Contact</th>
+                  <th class="p-3">Username</th>
+                </tr>
+              </thead>
+              <tbody id="company-table-body" class="divide-y divide-gray-200">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
         </div>
-    </div>
+      </div>
 
-    <!-- ================= INVOICE PRINT MODAL & VIEW ================= -->
-    <div id="invoice-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden overflow-y-auto p-4">
-        <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full p-8 relative flex flex-col max-h-[90vh]">
-            <button onclick="closeInvoiceModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl font-bold">&times;</button>
-            
-            <div id="print-area" class="overflow-y-auto pr-2 flex-1 p-4 bg-white">
-                <div class="flex justify-between items-start border-b-2 border-gray-200 pb-6 mb-6">
-                    <div>
-                        <div class="flex items-center gap-2 mb-2">
-                            <span class="h-8 w-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-black text-lg">L</span>
-                            <span class="text-xl font-black text-gray-900 tracking-tight">LOGIX GLOBAL LTD.</span>
-                        </div>
-                        <p class="text-xs text-gray-500">100 Logistics Terminal, Dock 4 Warehouse District</p>
-                        <p class="text-xs text-gray-500">Contact: fulfillment@logixglobal.xyz | +1 (800) 555-0100</p>
-                    </div>
-                    <div class="text-right">
-                        <h1 class="text-3xl font-black text-gray-400 tracking-wide uppercase mb-1">Sales Invoice</h1>
-                        <p class="text-sm font-bold text-gray-700">Invoice Reference: <span id="inv-id">#1001</span></p>
-                        <p class="text-xs text-gray-500">Date Issued: <span id="inv-date">2026-07-24</span></p>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-8 mb-8 text-sm">
-                    <div>
-                        <h5 class="font-bold text-gray-400 uppercase text-xs mb-2 tracking-wider">Bill & Ship To:</h5>
-                        <p class="font-bold text-gray-900 text-base" id="inv-cust-name">Customer Name</p>
-                        <p class="text-gray-600 mt-1 whitespace-pre-line leading-relaxed" id="inv-cust-address">Customer Address</p>
-                        <p class="text-gray-700 font-medium mt-1" id="inv-cust-phone">Phone: -</p>
-                    </div>
-                </div>
-
-                <table class="w-full text-left text-sm border-collapse mb-8">
-                    <thead>
-                        <tr class="bg-gray-800 text-white font-semibold uppercase text-xs tracking-wider">
-                            <th class="p-3 rounded-l">Sr No.</th>
-                            <th class="p-3">Item Description</th>
-                            <th class="p-3 text-center">Qty</th>
-                            <th class="p-3 text-right">Unit Price</th>
-                            <th class="p-3 text-right rounded-r">Total Amount</th>
-                        </tr>
-                    </thead>
-                    <tbody id="inv-items-body" class="divide-y divide-gray-200">
-                        <!-- Loaded dynamically -->
-                    </tbody>
-                </table>
-
-                <div class="flex justify-end mb-8">
-                    <div class="w-64 text-sm space-y-2">
-                        <div class="flex justify-between text-gray-600">
-                            <span>Subtotal:</span>
-                            <span id="inv-subtotal">$0.00</span>
-                        </div>
-                        <div class="flex justify-between text-gray-600">
-                            <span>Tax Assessment (0%):</span>
-                            <span>$0.00</span>
-                        </div>
-                        <div class="flex justify-between border-t border-gray-300 pt-2 font-bold text-lg text-gray-900">
-                            <span>Grand Total:</span>
-                            <span id="inv-total">$0.00</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="border-t pt-4 mt-8 bg-gray-50 p-4 rounded-lg">
-                    <h5 class="text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Terms, Agreements & Declarations:</h5>
-                    <p class="text-[11px] text-gray-500 leading-relaxed">
-                        1. All goods items delivered remain the legal property of the issuing seller company until total invoice accounts balances are fully paid off in execution.<br>
-                        2. Claims, damage events or errors regarding item quantities must be flagged down immediately within 48 business hours post receiving date records.<br>
-                        3. Returns parameters are processed purely against authorization certificates according to global company service line agreements.
-                    </p>
-                </div>
-            </div>
-
-            <div class="mt-4 pt-4 border-t flex justify-end gap-3">
-                <button onclick="closeInvoiceModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg text-sm font-medium transition cursor-pointer">
-                    Close Window
-                </button>
-                <button onclick="window.print()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition shadow cursor-pointer">
-                    🖨️ Print Invoice Document PDF
-                </button>
-            </div>
+      <!-- TAB 2: INVENTORY LEDGER -->
+      <div id="admin-inventory-tab" class="bg-white p-6 rounded-lg shadow hidden">
+        <h2 class="text-lg font-bold text-slate-900 mb-4">Automatic Inventory Tracking (Stock In/Out)</h2>
+        <div class="overflow-x-auto border rounded-lg">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-slate-800 text-white text-xs uppercase">
+              <tr>
+                <th class="p-3">Item Code</th>
+                <th class="p-3">Item Name</th>
+                <th class="p-3">Total In Stock</th>
+                <th class="p-3 text-red-300">Ordered Today (Out)</th>
+                <th class="p-3 text-green-300">Remaining Balance</th>
+              </tr>
+            </thead>
+            <tbody id="inventory-table-body" class="divide-y divide-gray-200">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
         </div>
+      </div>
+
+      <!-- TAB 3: NEXT DELIVERY REPORT -->
+      <div id="admin-reports-tab" class="bg-white p-6 rounded-lg shadow hidden">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-lg font-bold text-slate-900">Next Delivery Dispatch Schedule</h2>
+          <button onclick="window.print()" class="bg-slate-800 text-white px-3 py-1.5 text-xs font-bold rounded hover:bg-slate-700">
+            🖨️ Print Dispatch List
+          </button>
+        </div>
+        <div id="delivery-report-container" class="space-y-4">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
     </div>
 
-    <!-- ================= APP LOGIC JAVASCRIPT ================= -->
-    <script>
-        // Centralized Master Inventory State Registry
-        let inventory = {
-            "SKU-PRO-MAX": { name: "Pro Wireless Mechanical Keyboard", location: "RACK-A-SHELF-01", stock: 45 },
-            "SKU-MOU-ERG": { name: "Ergonomic Precision Trackball Mouse", location: "RACK-A-SHELF-02", stock: 120 },
-            "SKU-MON-4K":  { name: "32 UltraWide Cinema 4K Monitor", location: "RACK-B-SHELF-01", stock: 14 },
-            "SKU-CAB-USB": { name: "Braided High-Speed USB-C Cable 2m", location: "RACK-C-SHELF-05", stock: 650 }
-        };
+    <!-- ========================================== -->
+    <!-- 2. CLIENT ORDER PORTAL VIEW               -->
+    <!-- ========================================== -->
+    <div id="client-view" class="hidden max-w-2xl mx-auto space-y-6">
+      
+      <!-- Login Box -->
+      <div id="client-login-card" class="bg-white p-6 rounded-lg shadow">
+        <h2 class="text-lg font-bold text-slate-900 mb-1">Client Portal Login</h2>
+        <p class="text-xs text-gray-500 mb-4">Select your company and enter password to place orders.</p>
+        
+        <form onsubmit="handleClientLogin(event)" class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold uppercase text-gray-600 mb-1">Select Your Company</label>
+            <select id="login-company-select" class="w-full border p-2 rounded text-sm bg-white">
+              <!-- Dynamically filled -->
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-gray-600 mb-1">Password</label>
+            <input type="password" id="login-password" required class="w-full border p-2 rounded text-sm" placeholder="Enter assigned password">
+          </div>
+          <button type="submit" class="w-full bg-blue-600 text-white font-bold py-2.5 rounded hover:bg-blue-700">
+            Log In to Order
+          </button>
+        </form>
+      </div>
 
-        // Master Orders Registry mock database
-        let orders = [
-            {
-                id: "ORD-9482",
-                date: "2026-07-24 10:14",
-                customer: "Alice Vance",
-                phone: "+1 (555) 014-9922",
-                address: "742 Evergreen Terrace\nSpringfield, OR 97477",
-                status: "Pending Pick",
-                items: [
-                    { sku: "SKU-PRO-MAX", qty: 1, price: 129.99 },
-                    { sku: "SKU-CAB-USB", qty: 3, price: 12.50 }
-                ]
-            },
-            {
-                id: "ORD-9483",
-                date: "2026-07-24 11:45",
-                customer: "Robert Chen",
-                phone: "+1 (555) 987-6543",
-                address: "888 Innovation Boulevard, Apt 12F\nSan Jose, CA 95112",
-                status: "Pending Pick",
-                items: [
-                    { sku: "SKU-MOU-ERG", qty: 2, price: 89.00 },
-                    { sku: "SKU-MON-4K", qty: 1, price: 449.99 }
-                ]
-            }
-        ];
+      <!-- Order Form (Hidden until login) -->
+      <div id="client-order-card" class="bg-white p-6 rounded-lg shadow hidden">
+        <div class="flex justify-between items-center border-b pb-3 mb-4">
+          <div>
+            <span class="text-xs text-gray-500 uppercase font-bold">Logged In As</span>
+            <h2 id="active-client-name" class="text-lg font-bold text-blue-700">Company Name</h2>
+          </div>
+          <button onclick="logoutClient()" class="text-xs text-red-600 underline">Logout</button>
+        </div>
 
-        let selectedOrderId = null;
+        <form onsubmit="handlePlaceOrder(event)" class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold uppercase text-gray-600 mb-1">Select Item (Code - Name)</label>
+            <select id="order-item-select" class="w-full border p-2 rounded text-sm bg-white">
+              <!-- Dynamically filled -->
+            </select>
+          </div>
 
-        // Initialization Run
-        window.addEventListener('DOMContentLoaded', () => {
-            renderOrdersList();
-            renderCycleCountTable();
-            generateDefaultBarcode();
+          <div>
+            <label class="block text-xs font-bold uppercase text-gray-600 mb-1">Order Quantity</label>
+            <input type="number" id="order-quantity" min="1" value="10" required class="w-full border p-2 rounded text-sm">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold uppercase text-gray-600 mb-1">Delivery Date</label>
+            <input type="date" id="order-date" required class="w-full border p-2 rounded text-sm">
+          </div>
+
+          <button type="submit" class="w-full bg-green-600 text-white font-bold py-2.5 rounded hover:bg-green-700">
+            Submit Daily Order
+          </button>
+        </form>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    // --- APP DATA STATE ---
+    let companies = [
+      {
+        id: '1',
+        name: 'Grand Bistro Hotel',
+        address: '123 Ocean Drive, Bay Area',
+        contact: 'John Doe',
+        email: 'john@grandbistro.com',
+        mobile: '+1 555-0192',
+        storekeeper: '+1 555-0199',
+        user: 'grandbistro',
+        pass: '1234'
+      }
+    ];
+
+    let inventory = [
+      { code: 'FD-101', name: 'Fresh Milk (1L Bottle)', stock: 500, outToday: 0 },
+      { code: 'FD-102', name: 'Grade A Eggs (Tray 30)', stock: 1200, outToday: 0 },
+      { code: 'FD-103', name: 'Whole Wheat Bread (Sliced)', stock: 300, outToday: 0 },
+      { code: 'FD-104', name: 'Cheddar Cheese Block (1kg)', stock: 450, outToday: 0 }
+    ];
+
+    let orders = [];
+    let loggedInCompany = null;
+
+    // Set Default Delivery Date to Tomorrow
+    document.getElementById('order-date').valueAsDate = new Date(Date.now() + 86400000);
+
+    // --- NAVIGATION SWITCHING ---
+    function switchView(view) {
+      document.getElementById('admin-view').classList.toggle('hidden', view !== 'admin');
+      document.getElementById('client-view').classList.toggle('hidden', view !== 'client');
+      
+      document.getElementById('nav-admin-btn').className = view === 'admin' 
+        ? 'px-4 py-2 text-sm font-semibold rounded bg-blue-600 text-white' 
+        : 'px-4 py-2 text-sm font-semibold rounded bg-slate-700 text-slate-200';
+      
+      document.getElementById('nav-client-btn').className = view === 'client' 
+        ? 'px-4 py-2 text-sm font-semibold rounded bg-blue-600 text-white' 
+        : 'px-4 py-2 text-sm font-semibold rounded bg-slate-700 text-slate-200';
+
+      if (view === 'client') updateClientSelectDropdown();
+    }
+
+    function switchAdminTab(tab) {
+      document.getElementById('admin-register-tab').classList.toggle('hidden', tab !== 'register');
+      document.getElementById('admin-inventory-tab').classList.toggle('hidden', tab !== 'inventory');
+      document.getElementById('admin-reports-tab').classList.toggle('hidden', tab !== 'reports');
+
+      document.getElementById('tab-reg-btn').className = tab === 'register' ? 'pb-2 font-bold text-blue-600 border-b-2 border-blue-600' : 'pb-2 font-semibold text-gray-500 hover:text-gray-800';
+      document.getElementById('tab-inv-btn').className = tab === 'inventory' ? 'pb-2 font-bold text-blue-600 border-b-2 border-blue-600' : 'pb-2 font-semibold text-gray-500 hover:text-gray-800';
+      document.getElementById('tab-rep-btn').className = tab === 'reports' ? 'pb-2 font-bold text-blue-600 border-b-2 border-blue-600' : 'pb-2 font-semibold text-gray-500 hover:text-gray-800';
+    }
+
+    // --- ADMIN REGISTER COMPANY ---
+    function handleRegisterCompany(e) {
+      e.preventDefault();
+      const newCompany = {
+        id: Date.now().toString(),
+        name: document.getElementById('comp-name').value,
+        address: document.getElementById('comp-address').value,
+        contact: document.getElementById('comp-contact').value,
+        email: document.getElementById('comp-email').value,
+        mobile: document.getElementById('comp-mobile').value,
+        storekeeper: document.getElementById('comp-storekeeper').value,
+        user: document.getElementById('comp-user').value,
+        pass: document.getElementById('comp-pass').value
+      };
+
+      companies.push(newCompany);
+      document.getElementById('add-company-form').reset();
+      alert(`Company "${newCompany.name}" successfully registered!`);
+      renderTables();
+    }
+
+    // --- CLIENT LOGIN & ORDERING ---
+    function updateClientSelectDropdown() {
+      const select = document.getElementById('login-company-select');
+      select.innerHTML = companies.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+      
+      const itemSelect = document.getElementById('order-item-select');
+      itemSelect.innerHTML = inventory.map(i => `<option value="${i.code}">[${i.code}] ${i.name} (Stock: ${i.stock - i.outToday})</option>`).join('');
+    }
+
+    function handleClientLogin(e) {
+      e.preventDefault();
+      const companyId = document.getElementById('login-company-select').value;
+      const pass = document.getElementById('login-password').value;
+      const targetCompany = companies.find(c => c.id === companyId);
+
+      if (targetCompany && targetCompany.pass === pass) {
+        loggedInCompany = targetCompany;
+        document.getElementById('active-client-name').innerText = targetCompany.name;
+        document.getElementById('client-login-card').classList.add('hidden');
+        document.getElementById('client-order-card').classList.remove('hidden');
+      } else {
+        alert('Incorrect password for selected company!');
+      }
+    }
+
+    function logoutClient() {
+      loggedInCompany = null;
+      document.getElementById('client-login-card').classList.remove('hidden');
+      document.getElementById('client-order-card').classList.add('hidden');
+      document.getElementById('login-password').value = '';
+    }
+
+    function handlePlaceOrder(e) {
+      e.preventDefault();
+      const itemCode = document.getElementById('order-item-select').value;
+      const quantity = parseInt(document.getElementById('order-quantity').value);
+      const deliveryDate = document.getElementById('order-date').value;
+
+      const item = inventory.find(i => i.code === itemCode);
+      if (item) {
+        item.outToday += quantity;
+        orders.push({
+          id: Date.now().toString(),
+          companyName: loggedInCompany.name,
+          storekeeper: loggedInCompany.storekeeper,
+          address: loggedInCompany.address,
+          itemCode: item.code,
+          itemName: item.name,
+          quantity: quantity,
+          deliveryDate: deliveryDate
         });
 
-        // Tab Switching Engine Router
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            document.getElementById(tabId).classList.remove('hidden');
-        }
+        alert(`Order placed successfully for ${loggedInCompany.name}!`);
+        updateClientSelectDropdown();
+        renderTables();
+      }
+    }
 
-        // Render Orders List
-        function renderOrdersList() {
-            const listEl = document.getElementById('order-list');
-            listEl.innerHTML = '';
-            
-            orders.forEach(ord => {
-                const isSelected = ord.id === selectedOrderId;
-                const card = document.createElement('div');
-                card.className = `p-4 rounded-lg border cursor-pointer transition ${isSelected ? 'border-indigo-600 bg-indigo-50/50 shadow-sm' : 'border-gray-200 hover:border-gray-300 bg-white'}`;
-                card.onclick = () => selectOrder(ord.id);
-                
-                card.innerHTML = `
-                    <div class="flex justify-between items-center mb-1">
-                        <span class="font-bold text-gray-900">${ord.id}</span>
-                        <span class="text-xs px-2 py-0.5 rounded-full font-medium ${ord.status === 'Fulfilled' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">${ord.status}</span>
-                    </div>
-                    <p class="text-xs text-gray-600 mb-1">${ord.customer}</p>
-                    <p class="text-[11px] text-gray-400">${ord.date}</p>
-                `;
-                listEl.appendChild(card);
-            });
-        }
+    // --- RENDER TABLES & REPORTS ---
+    function renderTables() {
+      // 1. Render Companies Table
+      document.getElementById('comp-count').innerText = companies.length;
+      document.getElementById('company-table-body').innerHTML = companies.map(c => `
+        <tr>
+          <td class="p-3 font-semibold">${c.name}<br><span class="text-xs text-gray-500">${c.address}</span></td>
+          <td class="p-3">${c.contact}</td>
+          <td class="p-3">${c.email}<br><span class="text-xs font-mono">${c.mobile}</span></td>
+          <td class="p-3 font-semibold text-blue-700">${c.storekeeper}</td>
+          <td class="p-3 font-mono bg-gray-50">${c.user}</td>
+        </tr>
+      `).join('');
 
-        // Select Order View
-        function selectOrder(orderId) {
-            selectedOrderId = orderId;
-            renderOrdersList();
-            
-            const ord = orders.find(o => o.id === orderId);
-            if (!ord) return;
+      // 2. Render Inventory Ledger
+      document.getElementById('inventory-table-body').innerHTML = inventory.map(i => `
+        <tr>
+          <td class="p-3 font-mono font-bold text-blue-600">${i.code}</td>
+          <td class="p-3 font-medium">${i.name}</td>
+          <td class="p-3 font-semibold">${i.stock}</td>
+          <td class="p-3 font-bold text-red-600">-${i.outToday}</td>
+          <td class="p-3 font-bold text-green-600">${i.stock - i.outToday}</td>
+        </tr>
+      `).join('');
 
-            document.getElementById('order-details-blank').classList.add('hidden');
-            document.getElementById('order-details-content').classList.remove('hidden');
+      // 3. Render Delivery Report
+      const reportContainer = document.getElementById('delivery-report-container');
+      if (orders.length === 0) {
+        reportContainer.innerHTML = '<p class="text-gray-500 text-sm">No orders submitted yet for next delivery.</p>';
+        return;
+      }
 
-            document.getElementById('det-order-id').innerText = "#" + ord.id;
-            document.getElementById('det-order-date').innerText = "Date: " + ord.date;
-            document.getElementById('det-cust-name').innerText = ord.customer;
-            document.getElementById('det-cust-phone').innerText = ord.phone;
-            document.getElementById('det-cust-address').innerText = ord.address;
+      reportContainer.innerHTML = orders.map(o => `
+        <div class="border rounded-lg p-4 bg-slate-50 flex justify-between items-center">
+          <div>
+            <span class="text-xs font-bold text-blue-600 uppercase">Delivery Date: ${o.deliveryDate}</span>
+            <h3 class="font-bold text-slate-900 text-md">${o.companyName}</h3>
+            <p class="text-xs text-gray-600">📍 ${o.address} | 📞 Storekeeper: ${o.storekeeper}</p>
+          </div>
+          <div class="text-right">
+            <span class="text-sm font-mono font-bold bg-blue-100 text-blue-800 px-2 py-1 rounded">
+              ${o.quantity}x [${o.itemCode}] ${o.itemName}
+            </span>
+          </div>
+        </div>
+      `).join('');
+    }
 
-            const statusEl = document.getElementById('det-status');
-            statusEl.innerText = ord.status;
-            statusEl.className = `px-3 py-1 rounded-full text-xs font-semibold ${ord.status === 'Fulfilled' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`;
-
-            const itemsBody = document.getElementById('det-items-body');
-            itemsBody.innerHTML = '';
-
-            ord.items.forEach((item, index) => {
-                const invItem = inventory[item.sku] || { name: "Unknown Item", location: "UNASSIGNED" };
-                const row = document.createElement('tr');
-                row.className = "border-b border-gray-100 hover:bg-gray-50";
-                row.innerHTML = `
-                    <td class="p-3">
-                        <p class="font-semibold text-gray-800">${invItem.name}</p>
-                        <p class="text-xs text-gray-400 font-mono">${item.sku}</p>
-                    </td>
-                    <td class="p-3 text-center font-bold text-gray-700">${item.qty}</td>
-                    <td class="p-3">
-                        <button onclick="revealLocation(this, '${invItem.location}')" class="px-3 py-1 text-xs bg-indigo-50 text-indigo-600 border border-indigo-200 hover:bg-indigo-100 font-medium rounded transition cursor-pointer">
-                            📍 Reveal Location
-                        </button>
-                    </td>
-                `;
-                itemsBody.appendChild(row);
-            });
-        }
-
-        function revealLocation(btn, location) {
-            btn.outerHTML = `<span class="px-2.5 py-1 text-xs bg-indigo-100 text-indigo-800 font-mono font-bold rounded">${location}</span>`;
-        }
-
-        function fulfillCurrentOrder() {
-            if (!selectedOrderId) return;
-            const ord = orders.find(o => o.id === selectedOrderId);
-            if (ord) {
-                ord.status = "Fulfilled";
-                selectOrder(selectedOrderId);
-            }
-        }
-
-        // Shopify Webhook Simulating Component
-        function simulateIncomingOrder() {
-            const mockIds = ["9484", "9485", "9486", "9487"];
-            const randNum = mockIds[Math.floor(Math.random() * mockIds.length)];
-            const newId = "ORD-" + randNum + "-" + Math.floor(100 + Math.random() * 900);
-
-            const mockNames = ["Sarah Connor", "Bruce Wayne", "Diana Prince", "Clark Kent"];
-            const randName = mockNames[Math.floor(Math.random() * mockNames.length)];
-
-            const newOrder = {
-                id: newId,
-                date: new Date().toISOString().replace('T', ' ').substring(0, 16),
-                customer: randName,
-                phone: "+1 (555) 321-7654",
-                address: "456 Webhook Avenue, Suite 101\nAustin, TX 78701",
-                status: "Pending Pick",
-                items: [
-                    { sku: "SKU-PRO-MAX", qty: 1, price: 129.99 },
-                    { sku: "SKU-MOU-ERG", qty: 1, price: 89.00 }
-                ]
-            };
-
-            orders.unshift(newOrder);
-            renderOrdersList();
-            selectOrder(newId);
-        }
-
-        // Cycle Count Inventory Rendering
-        function renderCycleCountTable() {
-            const tbody = document.getElementById('inventory-table-body');
-            tbody.innerHTML = '';
-
-            Object.keys(inventory).forEach(sku => {
-                const item = inventory[sku];
-                const row = document.createElement('tr');
-                row.className = "hover:bg-gray-50";
-
-                let statusBadge = item.stock > 20 
-                    ? `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">In Stock</span>`
-                    : `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700">Low Stock</span>`;
-
-                row.innerHTML = `
-                    <td class="p-4 font-mono font-semibold text-indigo-600">${sku}</td>
-                    <td class="p-4 font-medium text-gray-800">${item.name}</td>
-                    <td class="p-4"><span class="bg-gray-100 font-mono px-2 py-1 rounded text-xs font-bold text-gray-700">${item.location}</span></td>
-                    <td class="p-4 text-center font-bold text-gray-800">${item.stock}</td>
-                    <td class="p-4">${statusBadge}</td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        // Add Item Modal Actions & Barcode Parser
-        function openAddItemModal() {
-            document.getElementById('add-item-modal').classList.remove('hidden');
-        }
-
-        function closeAddItemModal() {
-            document.getElementById('add-item-modal').classList.add('hidden');
-        }
-
-        function handleBarcodeScan(value) {
-            const val = value.trim().toUpperCase();
-            if (val.includes('SHELF')) {
-                const parts = val.split('-');
-                if (parts.length >= 4) {
-                    document.getElementById('add-rack').value = `${parts[0]}-${parts[1]}`;
-                    document.getElementById('add-shelf').value = `${parts[2]}-${parts[3]}`;
-                }
-            }
-        }
-
-        function handleAddItemSubmit(e) {
-            e.preventDefault();
-            const sku = document.getElementById('add-sku').value.trim().toUpperCase();
-            const name = document.getElementById('add-name').value.trim();
-            const rack = document.getElementById('add-rack').value.trim().toUpperCase();
-            const shelf = document.getElementById('add-shelf').value.trim().toUpperCase();
-            const stock = parseInt(document.getElementById('add-stock').value, 10);
-
-            const location = `${rack}-${shelf}`;
-            inventory[sku] = { name, location, stock };
-
-            renderCycleCountTable();
-            closeAddItemModal();
-            e.target.reset();
-        }
-
-        // Barcode Generation Engine
-        function generateDefaultBarcode() {
-            updateBarcodeSVG("RACK-A-SHELF-01");
-        }
-
-        function generateBarcode(e) {
-            e.preventDefault();
-            const rack = document.getElementById('bc-rack').value.trim().toUpperCase();
-            const shelf = document.getElementById('bc-shelf').value.trim().toUpperCase();
-            const locationCode = `${rack}-${shelf}`;
-            
-            updateBarcodeSVG(locationCode);
-        }
-
-        function updateBarcodeSVG(code) {
-            document.getElementById('barcode-txt-loc').innerText = code;
-            JsBarcode("#barcode-svg", code, {
-                format: "CODE128",
-                width: 2,
-                height: 60,
-                displayValue: false
-            });
-        }
-
-        // Invoice Engine Actions
-        function openInvoiceModal() {
-            if (!selectedOrderId) return;
-            const ord = orders.find(o => o.id === selectedOrderId);
-            if (!ord) return;
-
-            document.getElementById('inv-id').innerText = "#" + ord.id;
-            document.getElementById('inv-date').innerText = ord.date;
-            document.getElementById('inv-cust-name').innerText = ord.customer;
-            document.getElementById('inv-cust-address').innerText = ord.address;
-            document.getElementById('inv-cust-phone').innerText = "Phone: " + ord.phone;
-
-            const tbody = document.getElementById('inv-items-body');
-            tbody.innerHTML = '';
-            let subtotal = 0;
-
-            ord.items.forEach((item, idx) => {
-                const invItem = inventory[item.sku] || { name: "Item" };
-                const total = item.qty * item.price;
-                subtotal += total;
-
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td class="p-3">${idx + 1}</td>
-                    <td class="p-3 font-semibold">${invItem.name} <br><span class="text-xs font-mono font-normal text-gray-400">${item.sku}</span></td>
-                    <td class="p-3 text-center">${item.qty}</td>
-                    <td class="p-3 text-right">$${item.price.toFixed(2)}</td>
-                    <td class="p-3 text-right font-bold">$${total.toFixed(2)}</td>
-                `;
-                tbody.appendChild(row);
-            });
-
-            document.getElementById('inv-subtotal').innerText = "$" + subtotal.toFixed(2);
-            document.getElementById('inv-total').innerText = "$" + subtotal.toFixed(2);
-
-            document.getElementById('invoice-modal').classList.remove('hidden');
-        }
-
-        function closeInvoiceModal() {
-            document.getElementById('invoice-modal').classList.add('hidden');
-        }
-    </script>
+    // Initial Table Load
+    renderTables();
+  </script>
 </body>
 </html>
