@@ -34,15 +34,21 @@
     <div id="admin-view" class="space-y-6">
 
       <!-- Admin Sub-Navigation -->
-      <div class="flex border-b border-gray-300 gap-4">
+      <div class="flex flex-wrap border-b border-gray-300 gap-4">
         <button onclick="switchAdminTab('register')" id="tab-reg-btn" class="pb-2 font-bold text-blue-600 border-b-2 border-blue-600">
           + Register Client Company
         </button>
         <button onclick="switchAdminTab('inventory')" id="tab-inv-btn" class="pb-2 font-semibold text-gray-500 hover:text-gray-800">
-          Live Inventory Ledger (In/Out)
+          Live Inventory Ledger & Value
+        </button>
+        <button onclick="switchAdminTab('approvals')" id="tab-app-btn" class="pb-2 font-semibold text-gray-500 hover:text-gray-800 flex items-center gap-1">
+          Pending Approvals <span id="pending-badge" class="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">0</span>
         </button>
         <button onclick="switchAdminTab('reports')" id="tab-rep-btn" class="pb-2 font-semibold text-gray-500 hover:text-gray-800">
           Next Delivery Report
+        </button>
+        <button onclick="switchAdminTab('monthly')" id="tab-mon-btn" class="pb-2 font-semibold text-gray-500 hover:text-gray-800">
+          Monthly Client Matrix & MoM Comparison
         </button>
       </div>
 
@@ -123,18 +129,39 @@
         </div>
       </div>
 
-      <!-- TAB 2: INVENTORY LEDGER -->
-      <div id="admin-inventory-tab" class="bg-white p-6 rounded-lg shadow hidden">
-        <h2 class="text-lg font-bold text-slate-900 mb-4">Automatic Inventory Tracking (Stock In/Out)</h2>
+      <!-- TAB 2: INVENTORY LEDGER & VALUE -->
+      <div id="admin-inventory-tab" class="bg-white p-6 rounded-lg shadow hidden space-y-6">
+        <h2 class="text-lg font-bold text-slate-900">Automatic Inventory Tracking & Stock Valuation</h2>
+        
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <span class="text-xs font-bold text-blue-600 uppercase">Total Unique Items</span>
+            <div id="summary-total-items" class="text-2xl font-extrabold text-blue-900">0</div>
+          </div>
+          <div class="p-4 bg-green-50 border border-green-200 rounded-lg">
+            <span class="text-xs font-bold text-green-600 uppercase">Total Stock Quantity</span>
+            <div id="summary-total-qty" class="text-2xl font-extrabold text-green-900">0 Units</div>
+          </div>
+          <div class="p-4 bg-purple-50 border border-purple-200 rounded-lg">
+            <span class="text-xs font-bold text-purple-600 uppercase">Total Inventory Financial Value</span>
+            <div id="summary-total-val" class="text-2xl font-extrabold text-purple-900">$0.00</div>
+          </div>
+        </div>
+
         <div class="overflow-x-auto border rounded-lg">
           <table class="w-full text-left text-sm">
             <thead class="bg-slate-800 text-white text-xs uppercase">
               <tr>
                 <th class="p-3">Item Code</th>
                 <th class="p-3">Item Name</th>
-                <th class="p-3">Total In Stock</th>
-                <th class="p-3 text-red-300">Ordered Today (Out)</th>
+                <th class="p-3">Origin</th>
+                <th class="p-3">Unit Price ($)</th>
+                <th class="p-3">Total Stock</th>
+                <th class="p-3 text-red-300">Approved Out</th>
                 <th class="p-3 text-green-300">Remaining Balance</th>
+                <th class="p-3">Total Value ($)</th>
+                <th class="p-3">Status</th>
               </tr>
             </thead>
             <tbody id="inventory-table-body" class="divide-y divide-gray-200">
@@ -144,10 +171,43 @@
         </div>
       </div>
 
-      <!-- TAB 3: NEXT DELIVERY REPORT -->
-      <div id="admin-reports-tab" class="bg-white p-6 rounded-lg shadow hidden">
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="text-lg font-bold text-slate-900">Next Delivery Dispatch Schedule</h2>
+      <!-- TAB 3: PENDING APPROVALS -->
+      <div id="admin-approvals-tab" class="bg-white p-6 rounded-lg shadow hidden">
+        <h2 class="text-lg font-bold text-slate-900 mb-4">Pending Client Orders Requiring Approval</h2>
+        <div class="overflow-x-auto border rounded-lg">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-slate-800 text-white text-xs uppercase">
+              <tr>
+                <th class="p-3">Company</th>
+                <th class="p-3">Item Code & Name</th>
+                <th class="p-3">Qty Requested</th>
+                <th class="p-3">Stock On Hand</th>
+                <th class="p-3">Delivery Date</th>
+                <th class="p-3">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="approvals-table-body" class="divide-y divide-gray-200">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB 4: NEXT DELIVERY REPORT & BEST SELLER -->
+      <div id="admin-reports-tab" class="bg-white p-6 rounded-lg shadow hidden space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+            <span class="text-xs font-bold text-amber-700 uppercase">🔥 Best Selling Item</span>
+            <div id="best-selling-item" class="text-xl font-bold text-amber-900">N/A</div>
+          </div>
+          <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
+            <span class="text-xs font-bold text-emerald-700 uppercase">🏆 Top Consuming Customer</span>
+            <div id="top-customer-name" class="text-xl font-bold text-emerald-900">N/A</div>
+          </div>
+        </div>
+
+        <div class="flex justify-between items-center border-t pt-4">
+          <h2 class="text-lg font-bold text-slate-900">Accepted Next Delivery Dispatch Schedule</h2>
           <button onclick="window.print()" class="bg-slate-800 text-white px-3 py-1.5 text-xs font-bold rounded hover:bg-slate-700">
             🖨️ Print Dispatch List
           </button>
@@ -157,12 +217,48 @@
         </div>
       </div>
 
+      <!-- TAB 5: MONTHLY CLIENT MATRIX REPORT & MOM COMPARISON -->
+      <div id="admin-monthly-tab" class="bg-white p-6 rounded-lg shadow hidden">
+        <div class="flex justify-between items-center mb-4">
+          <div>
+            <h2 class="text-lg font-bold text-slate-900">Client Monthly Quantity Consumption & Value Report</h2>
+            <p class="text-xs text-gray-500">Client names vertically | Months horizontally (Jan - Mar) with MoM comparison</p>
+          </div>
+        </div>
+        <div class="overflow-x-auto border rounded-lg">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-800 text-white uppercase">
+              <tr>
+                <th class="p-3 border-r border-slate-700 min-w-[180px]">Client Name</th>
+                <th class="p-3 text-center border-r border-slate-700" colSpan="2">January</th>
+                <th class="p-3 text-center border-r border-slate-700" colSpan="2">February</th>
+                <th class="p-3 text-center border-r border-slate-700" colSpan="2">March (Current)</th>
+                <th class="p-3 text-center bg-blue-900">MoM Qty Compare (Feb vs Mar)</th>
+              </tr>
+              <tr class="bg-slate-700 text-slate-200 text-[10px]">
+                <th class="p-2 border-r border-slate-600"></th>
+                <th class="p-2 text-center border-r border-slate-600">Qty</th>
+                <th class="p-2 text-center border-r border-slate-600">Amount ($)</th>
+                <th class="p-2 text-center border-r border-slate-600">Qty</th>
+                <th class="p-2 text-center border-r border-slate-600">Amount ($)</th>
+                <th class="p-2 text-center border-r border-slate-600">Qty</th>
+                <th class="p-2 text-center border-r border-slate-600">Amount ($)</th>
+                <th class="p-2 text-center bg-blue-800">% Change</th>
+              </tr>
+            </thead>
+            <tbody id="monthly-matrix-body" class="divide-y divide-gray-200 font-mono">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
     </div>
 
     <!-- ========================================== -->
     <!-- 2. CLIENT ORDER PORTAL VIEW               -->
     <!-- ========================================== -->
-    <div id="client-view" class="hidden max-w-2xl mx-auto space-y-6">
+    <div id="client-view" class="hidden max-w-3xl mx-auto space-y-6">
       
       <!-- Login Box -->
       <div id="client-login-card" class="bg-white p-6 rounded-lg shadow">
@@ -186,19 +282,26 @@
         </form>
       </div>
 
-      <!-- Order Form (Hidden until login) -->
-      <div id="client-order-card" class="bg-white p-6 rounded-lg shadow hidden">
-        <div class="flex justify-between items-center border-b pb-3 mb-4">
+      <!-- Order Form & Notifications (Hidden until login) -->
+      <div id="client-order-card" class="bg-white p-6 rounded-lg shadow hidden space-y-6">
+        <div class="flex justify-between items-center border-b pb-3">
           <div>
             <span class="text-xs text-gray-500 uppercase font-bold">Logged In As</span>
             <h2 id="active-client-name" class="text-lg font-bold text-blue-700">Company Name</h2>
           </div>
-          <button onclick="logoutClient()" class="text-xs text-red-600 underline">Logout</button>
+          <button onclick="logoutClient()" class="text-xs text-red-600 underline font-semibold">Logout</button>
         </div>
 
-        <form onsubmit="handlePlaceOrder(event)" class="space-y-4">
+        <!-- Notification Feed -->
+        <div id="client-notifications" class="space-y-2">
+          <!-- Live order alerts shown here -->
+        </div>
+
+        <form onsubmit="handlePlaceOrder(event)" class="space-y-4 border-t pt-4">
+          <h3 class="text-sm font-bold text-slate-800 uppercase">Place New Order</h3>
+          
           <div>
-            <label class="block text-xs font-bold uppercase text-gray-600 mb-1">Select Item (Code - Name)</label>
+            <label class="block text-xs font-bold uppercase text-gray-600 mb-1">Select Item (Code - Name | Origin | Stock)</label>
             <select id="order-item-select" class="w-full border p-2 rounded text-sm bg-white">
               <!-- Dynamically filled -->
             </select>
@@ -214,10 +317,31 @@
             <input type="date" id="order-date" required class="w-full border p-2 rounded text-sm">
           </div>
 
-          <button type="submit" class="w-full bg-green-600 text-white font-bold py-2.5 rounded hover:bg-green-700">
-            Submit Daily Order
+          <button type="submit" id="submit-order-btn" class="w-full bg-green-600 text-white font-bold py-2.5 rounded hover:bg-green-700">
+            Submit Order for Approval
           </button>
         </form>
+
+        <!-- Client Order History -->
+        <div class="border-t pt-4">
+          <h3 class="text-sm font-bold text-slate-800 uppercase mb-3">Your Recent Orders & Status</h3>
+          <div class="overflow-x-auto border rounded-lg">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-800 text-white uppercase">
+                <tr>
+                  <th class="p-2">Item</th>
+                  <th class="p-2">Qty</th>
+                  <th class="p-2">Delivery Date</th>
+                  <th class="p-2">Status</th>
+                </tr>
+              </thead>
+              <tbody id="client-order-history" class="divide-y divide-gray-200">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
       </div>
 
     </div>
@@ -237,18 +361,54 @@
         mobile: '+1 555-0192',
         storekeeper: '+1 555-0199',
         user: 'grandbistro',
-        pass: '1234'
+        pass: '1234',
+        monthly: {
+          jan: { qty: 150, amount: 750 },
+          feb: { qty: 200, amount: 1000 },
+          mar: { qty: 250, amount: 1250 }
+        }
+      },
+      {
+        id: '2',
+        name: 'Green Cafe & Bakery',
+        address: '45 Park Avenue, City Center',
+        contact: 'Sarah Smith',
+        email: 'sarah@greencafe.com',
+        mobile: '+1 555-0244',
+        storekeeper: '+1 555-0255',
+        user: 'greencafe',
+        pass: '1234',
+        monthly: {
+          jan: { qty: 90, amount: 450 },
+          feb: { qty: 120, amount: 600 },
+          mar: { qty: 110, amount: 550 }
+        }
       }
     ];
 
     let inventory = [
-      { code: 'FD-101', name: 'Fresh Milk (1L Bottle)', stock: 500, outToday: 0 },
-      { code: 'FD-102', name: 'Grade A Eggs (Tray 30)', stock: 1200, outToday: 0 },
-      { code: 'FD-103', name: 'Whole Wheat Bread (Sliced)', stock: 300, outToday: 0 },
-      { code: 'FD-104', name: 'Cheddar Cheese Block (1kg)', stock: 450, outToday: 0 }
+      { code: 'FD-101', name: 'Fresh Milk (1L Bottle)', origin: 'New Zealand', unitPrice: 3.50, stock: 500, outToday: 0 },
+      { code: 'FD-102', name: 'Grade A Eggs (Tray 30)', origin: 'USA', unitPrice: 6.00, stock: 1200, outToday: 0 },
+      { code: 'FD-103', name: 'Whole Wheat Bread (Sliced)', origin: 'Local Bakery', unitPrice: 2.20, stock: 0, outToday: 0 }, // Out of stock example
+      { code: 'FD-104', name: 'Cheddar Cheese Block (1kg)', origin: 'France', unitPrice: 12.00, stock: 450, outToday: 0 }
     ];
 
-    let orders = [];
+    let orders = [
+      {
+        id: 'ord-101',
+        companyId: '1',
+        companyName: 'Grand Bistro Hotel',
+        storekeeper: '+1 555-0199',
+        address: '123 Ocean Drive, Bay Area',
+        itemCode: 'FD-101',
+        itemName: 'Fresh Milk (1L Bottle)',
+        quantity: 50,
+        unitPrice: 3.50,
+        deliveryDate: '2026-08-09',
+        status: 'Approved' // Pending, Approved, Rejected
+      }
+    ];
+
     let loggedInCompany = null;
 
     // Set Default Delivery Date to Tomorrow
@@ -273,11 +433,15 @@
     function switchAdminTab(tab) {
       document.getElementById('admin-register-tab').classList.toggle('hidden', tab !== 'register');
       document.getElementById('admin-inventory-tab').classList.toggle('hidden', tab !== 'inventory');
+      document.getElementById('admin-approvals-tab').classList.toggle('hidden', tab !== 'approvals');
       document.getElementById('admin-reports-tab').classList.toggle('hidden', tab !== 'reports');
+      document.getElementById('admin-monthly-tab').classList.toggle('hidden', tab !== 'monthly');
 
       document.getElementById('tab-reg-btn').className = tab === 'register' ? 'pb-2 font-bold text-blue-600 border-b-2 border-blue-600' : 'pb-2 font-semibold text-gray-500 hover:text-gray-800';
       document.getElementById('tab-inv-btn').className = tab === 'inventory' ? 'pb-2 font-bold text-blue-600 border-b-2 border-blue-600' : 'pb-2 font-semibold text-gray-500 hover:text-gray-800';
+      document.getElementById('tab-app-btn').className = tab === 'approvals' ? 'pb-2 font-bold text-blue-600 border-b-2 border-blue-600 flex items-center gap-1' : 'pb-2 font-semibold text-gray-500 hover:text-gray-800 flex items-center gap-1';
       document.getElementById('tab-rep-btn').className = tab === 'reports' ? 'pb-2 font-bold text-blue-600 border-b-2 border-blue-600' : 'pb-2 font-semibold text-gray-500 hover:text-gray-800';
+      document.getElementById('tab-mon-btn').className = tab === 'monthly' ? 'pb-2 font-bold text-blue-600 border-b-2 border-blue-600' : 'pb-2 font-semibold text-gray-500 hover:text-gray-800';
     }
 
     // --- ADMIN REGISTER COMPANY ---
@@ -292,7 +456,8 @@
         mobile: document.getElementById('comp-mobile').value,
         storekeeper: document.getElementById('comp-storekeeper').value,
         user: document.getElementById('comp-user').value,
-        pass: document.getElementById('comp-pass').value
+        pass: document.getElementById('comp-pass').value,
+        monthly: { jan: { qty: 0, amount: 0 }, feb: { qty: 0, amount: 0 }, mar: { qty: 0, amount: 0 } }
       };
 
       companies.push(newCompany);
@@ -307,7 +472,13 @@
       select.innerHTML = companies.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
       
       const itemSelect = document.getElementById('order-item-select');
-      itemSelect.innerHTML = inventory.map(i => `<option value="${i.code}">[${i.code}] ${i.name} (Stock: ${i.stock - i.outToday})</option>`).join('');
+      itemSelect.innerHTML = inventory.map(i => {
+        const remaining = i.stock - i.outToday;
+        const isOutOfStock = remaining <= 0;
+        return `<option value="${i.code}" ${isOutOfStock ? 'disabled class="text-red-400 bg-gray-100"' : ''}>
+          [${i.code}] ${i.name} (Origin: ${i.origin}) - ${isOutOfStock ? 'OUT OF STOCK' : 'Stock: ' + remaining}
+        </option>`;
+      }).join('');
     }
 
     function handleClientLogin(e) {
@@ -321,6 +492,7 @@
         document.getElementById('active-client-name').innerText = targetCompany.name;
         document.getElementById('client-login-card').classList.add('hidden');
         document.getElementById('client-order-card').classList.remove('hidden');
+        renderClientView();
       } else {
         alert('Incorrect password for selected company!');
       }
@@ -341,22 +513,101 @@
 
       const item = inventory.find(i => i.code === itemCode);
       if (item) {
-        item.outToday += quantity;
+        const remaining = item.stock - item.outToday;
+        if (quantity > remaining) {
+          alert(`Cannot place order! Only ${remaining} units remaining in stock.`);
+          return;
+        }
+
         orders.push({
-          id: Date.now().toString(),
+          id: 'ord-' + Date.now().toString().slice(-4),
+          companyId: loggedInCompany.id,
           companyName: loggedInCompany.name,
           storekeeper: loggedInCompany.storekeeper,
           address: loggedInCompany.address,
           itemCode: item.code,
           itemName: item.name,
           quantity: quantity,
-          deliveryDate: deliveryDate
+          unitPrice: item.unitPrice,
+          deliveryDate: deliveryDate,
+          status: 'Pending'
         });
 
-        alert(`Order placed successfully for ${loggedInCompany.name}!`);
-        updateClientSelectDropdown();
+        alert(`Order submitted successfully! Awaiting Admin Acceptance.`);
+        renderClientView();
         renderTables();
       }
+    }
+
+    // --- APPROVAL ACTIONS ---
+    function approveOrder(orderId) {
+      const order = orders.find(o => o.id === orderId);
+      if (order) {
+        const item = inventory.find(i => i.code === order.itemCode);
+        if (item) {
+          item.outToday += order.quantity;
+          order.status = 'Approved';
+
+          // Update client march metrics
+          const client = companies.find(c => c.id === order.companyId);
+          if (client) {
+            client.monthly.mar.qty += order.quantity;
+            client.monthly.mar.amount += (order.quantity * order.unitPrice);
+          }
+        }
+        renderTables();
+        if (loggedInCompany) renderClientView();
+      }
+    }
+
+    function rejectOrder(orderId) {
+      const order = orders.find(o => o.id === orderId);
+      if (order) {
+        order.status = 'Rejected';
+        renderTables();
+        if (loggedInCompany) renderClientView();
+      }
+    }
+
+    // --- RENDER CLIENT VIEW (NOTIFICATIONS & HISTORY) ---
+    function renderClientView() {
+      const myOrders = orders.filter(o => o.companyId === loggedInCompany.id);
+      
+      // Notifications
+      const notifBox = document.getElementById('client-notifications');
+      const latestApproved = myOrders.filter(o => o.status === 'Approved');
+      const latestRejected = myOrders.filter(o => o.status === 'Rejected');
+
+      notifBox.innerHTML = '';
+      if (latestApproved.length > 0) {
+        notifBox.innerHTML += `
+          <div class="p-3 bg-green-100 border border-green-300 text-green-800 rounded text-xs flex justify-between items-center">
+            <span>✅ <strong>Order Accepted!</strong> Your recent order for ${latestApproved[latestApproved.length - 1].itemName} has been accepted by dispatch.</span>
+          </div>
+        `;
+      }
+      if (latestRejected.length > 0) {
+        notifBox.innerHTML += `
+          <div class="p-3 bg-red-100 border border-red-300 text-red-800 rounded text-xs flex justify-between items-center">
+            <span>⚠️ <strong>Order Declined:</strong> Order for ${latestRejected[latestRejected.length - 1].itemName} could not be fulfilled.</span>
+          </div>
+        `;
+      }
+
+      // Order History
+      document.getElementById('client-order-history').innerHTML = myOrders.map(o => `
+        <tr>
+          <td class="p-2 font-semibold">${o.itemName}</td>
+          <td class="p-2 font-mono">${o.quantity}</td>
+          <td class="p-2">${o.deliveryDate}</td>
+          <td class="p-2">
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+              o.status === 'Approved' ? 'bg-green-100 text-green-800' : 
+              o.status === 'Rejected' ? 'bg-red-100 text-red-800' : 'bg-amber-100 text-amber-800'
+            }">${o.status}</span>
+          </td>
+        </tr>
+      `).join('');
     }
 
     // --- RENDER TABLES & REPORTS ---
@@ -373,38 +624,136 @@
         </tr>
       `).join('');
 
-      // 2. Render Inventory Ledger
-      document.getElementById('inventory-table-body').innerHTML = inventory.map(i => `
-        <tr>
-          <td class="p-3 font-mono font-bold text-blue-600">${i.code}</td>
-          <td class="p-3 font-medium">${i.name}</td>
-          <td class="p-3 font-semibold">${i.stock}</td>
-          <td class="p-3 font-bold text-red-600">-${i.outToday}</td>
-          <td class="p-3 font-bold text-green-600">${i.stock - i.outToday}</td>
-        </tr>
-      `).join('');
+      // 2. Render Inventory Ledger & Summary Cards
+      let totalItems = inventory.length;
+      let totalQty = 0;
+      let totalVal = 0;
 
-      // 3. Render Delivery Report
-      const reportContainer = document.getElementById('delivery-report-container');
-      if (orders.length === 0) {
-        reportContainer.innerHTML = '<p class="text-gray-500 text-sm">No orders submitted yet for next delivery.</p>';
-        return;
+      document.getElementById('inventory-table-body').innerHTML = inventory.map(i => {
+        const remaining = i.stock - i.outToday;
+        const itemVal = remaining * i.unitPrice;
+        totalQty += remaining;
+        totalVal += itemVal;
+
+        const isOut = remaining <= 0;
+
+        return `
+          <tr class="${isOut ? 'bg-red-50' : ''}">
+            <td class="p-3 font-mono font-bold text-blue-600">${i.code}</td>
+            <td class="p-3 font-medium">${i.name}</td>
+            <td class="p-3 text-gray-600 font-semibold">${i.origin}</td>
+            <td class="p-3 font-mono">$${i.unitPrice.toFixed(2)}</td>
+            <td class="p-3 font-semibold">${i.stock}</td>
+            <td class="p-3 font-bold text-red-600">-${i.outToday}</td>
+            <td class="p-3 font-bold text-green-600">${remaining}</td>
+            <td class="p-3 font-bold font-mono">$${itemVal.toFixed(2)}</td>
+            <td class="p-3">
+              ${isOut 
+                ? '<span class="bg-red-600 text-white text-[10px] px-2 py-0.5 rounded font-bold uppercase">Out of Stock</span>' 
+                : '<span class="bg-green-100 text-green-800 text-[10px] px-2 py-0.5 rounded font-bold uppercase">In Stock</span>'}
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      document.getElementById('summary-total-items').innerText = totalItems;
+      document.getElementById('summary-total-qty').innerText = totalQty + ' Units';
+      document.getElementById('summary-total-val').innerText = '$' + totalVal.toLocaleString(undefined, {minimumFractionDigits: 2});
+
+      // 3. Render Approvals Queue
+      const pendingOrders = orders.filter(o => o.status === 'Pending');
+      document.getElementById('pending-badge').innerText = pendingOrders.length;
+      document.getElementById('approvals-table-body').innerHTML = pendingOrders.map(o => {
+        const item = inventory.find(i => i.code === o.itemCode);
+        const stockOnHand = item ? (item.stock - item.outToday) : 0;
+        return `
+          <tr>
+            <td class="p-3 font-semibold">${o.companyName}</td>
+            <td class="p-3">[${o.itemCode}] ${o.itemName}</td>
+            <td class="p-3 font-bold text-blue-600">${o.quantity}</td>
+            <td class="p-3 font-semibold">${stockOnHand}</td>
+            <td class="p-3">${o.deliveryDate}</td>
+            <td class="p-3 space-x-2">
+              <button onclick="approveOrder('${o.id}')" class="bg-green-600 text-white text-xs px-2.5 py-1 rounded font-bold hover:bg-green-700">Accept</button>
+              <button onclick="rejectOrder('${o.id}')" class="bg-red-600 text-white text-xs px-2.5 py-1 rounded font-bold hover:bg-red-700">Decline</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+      if (pendingOrders.length === 0) {
+        document.getElementById('approvals-table-body').innerHTML = '<tr><td colSpan="6" class="p-4 text-center text-gray-500">No pending orders waiting for approval.</td></tr>';
       }
 
-      reportContainer.innerHTML = orders.map(o => `
-        <div class="border rounded-lg p-4 bg-slate-50 flex justify-between items-center">
-          <div>
-            <span class="text-xs font-bold text-blue-600 uppercase">Delivery Date: ${o.deliveryDate}</span>
-            <h3 class="font-bold text-slate-900 text-md">${o.companyName}</h3>
-            <p class="text-xs text-gray-600">📍 ${o.address} | 📞 Storekeeper: ${o.storekeeper}</p>
+      // 4. Render Best Seller & Top Customer
+      const approvedOrders = orders.filter(o => o.status === 'Approved');
+      if (approvedOrders.length > 0) {
+        // Calculate best item
+        const itemTotals = {};
+        approvedOrders.forEach(o => {
+          itemTotals[o.itemName] = (itemTotals[o.itemName] || 0) + o.quantity;
+        });
+        const bestItem = Object.keys(itemTotals).reduce((a, b) => itemTotals[a] > itemTotals[b] ? a : b);
+        document.getElementById('best-selling-item').innerText = `${bestItem} (${itemTotals[bestItem]} Units Sold)`;
+
+        // Top Customer
+        const clientTotals = {};
+        approvedOrders.forEach(o => {
+          clientTotals[o.companyName] = (clientTotals[o.companyName] || 0) + o.quantity;
+        });
+        const topClient = Object.keys(clientTotals).reduce((a, b) => clientTotals[a] > clientTotals[b] ? a : b);
+        document.getElementById('top-customer-name').innerText = `${topClient} (${clientTotals[topClient]} Total Qty)`;
+      }
+
+      // 5. Render Approved Delivery Report
+      const reportContainer = document.getElementById('delivery-report-container');
+      if (approvedOrders.length === 0) {
+        reportContainer.innerHTML = '<p class="text-gray-500 text-sm">No accepted orders ready for dispatch.</p>';
+      } else {
+        reportContainer.innerHTML = approvedOrders.map(o => `
+          <div class="border rounded-lg p-4 bg-slate-50 flex justify-between items-center">
+            <div>
+              <span class="text-xs font-bold text-blue-600 uppercase">Delivery Date: ${o.deliveryDate}</span>
+              <h3 class="font-bold text-slate-900 text-md">${o.companyName}</h3>
+              <p class="text-xs text-gray-600">📍 ${o.address} | 📞 Storekeeper: ${o.storekeeper}</p>
+            </div>
+            <div class="text-right">
+              <span class="text-sm font-mono font-bold bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                ${o.quantity}x [${o.itemCode}] ${o.itemName}
+              </span>
+            </div>
           </div>
-          <div class="text-right">
-            <span class="text-sm font-mono font-bold bg-blue-100 text-blue-800 px-2 py-1 rounded">
-              ${o.quantity}x [${o.itemCode}] ${o.itemName}
-            </span>
-          </div>
-        </div>
-      `).join('');
+        `).join('');
+      }
+
+      // 6. Render Monthly Client Matrix & MoM Comparison
+      document.getElementById('monthly-matrix-body').innerHTML = companies.map(c => {
+        const febQty = c.monthly.feb.qty;
+        const marQty = c.monthly.mar.qty;
+        
+        let momPercent = 0;
+        if (febQty > 0) {
+          momPercent = (((marQty - febQty) / febQty) * 100).toFixed(1);
+        } else if (marQty > 0) {
+          momPercent = 100;
+        }
+
+        const isPositive = momPercent >= 0;
+
+        return `
+          <tr>
+            <td class="p-3 font-semibold font-sans border-r text-slate-900">${c.name}</td>
+            <td class="p-3 text-center border-r">${c.monthly.jan.qty}</td>
+            <td class="p-3 text-center border-r text-gray-600">$${c.monthly.jan.amount.toFixed(2)}</td>
+            <td class="p-3 text-center border-r">${c.monthly.feb.qty}</td>
+            <td class="p-3 text-center border-r text-gray-600">$${c.monthly.feb.amount.toFixed(2)}</td>
+            <td class="p-3 text-center border-r font-bold text-blue-700">${c.monthly.mar.qty}</td>
+            <td class="p-3 text-center border-r font-bold text-blue-700">$${c.monthly.mar.amount.toFixed(2)}</td>
+            <td class="p-3 text-center font-bold ${isPositive ? 'text-green-600 bg-green-50' : 'text-red-600 bg-red-50'}">
+              ${isPositive ? '▲ +' : '▼ '}${momPercent}%
+            </td>
+          </tr>
+        `;
+      }).join('');
     }
 
     // Initial Table Load
