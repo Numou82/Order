@@ -3,8 +3,8 @@
 }
 
 body {
-  font-family: Arial, sans-serif;
-  background-color: #f4f4f9;
+  font-family: Arial, Helvetica, sans-serif;
+  background: #e9ecef;
   margin: 10px;
   color: #000;
 }
@@ -17,81 +17,114 @@ body {
 button {
   padding: 8px 16px;
   font-size: 13px;
-  margin: 3px;
+  margin: 2px;
   cursor: pointer;
   border: none;
   border-radius: 4px;
 }
 
-.btn-primary { background: #28a745; color: white; }
-.btn-secondary { background: #007bff; color: white; }
+.btn-primary { background: #198754; color: white; }
+.btn-secondary { background: #0d6efd; color: white; }
 .btn-reset { background: #6c757d; color: white; }
 
-/* Fixed dimensions for single-page print fit */
+/* Strictly aligned layout container */
 .invoice-box {
-  width: 750px;
-  height: 1020px; /* Fits 1 A4 page strictly */
-  margin: auto;
-  padding: 20px;
+  width: 790px;
+  height: 1050px;
+  margin: 0 auto;
+  padding: 30px;
+  background: #ffffff;
   border: 1px solid #ccc;
-  background: #fff;
 }
 
-.header {
+/* Header matching original layout */
+.header-row {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-}
-
-.company-details h2 { margin: 0; color: #111; font-size: 20px; }
-.company-details p { margin: 2px 0; font-size: 12px; }
-
-.invoice-logo {
-  max-width: 170px;
-  height: auto;
-}
-
-.divider {
-  border: 0;
-  border-top: 2px solid #800000;
-  margin: 10px 0;
-}
-
-.info-grid {
-  display: flex;
-  justify-content: space-between;
+  align-items: flex-start;
   margin-bottom: 10px;
 }
 
-.section-title {
-  margin: 0 0 5px 0;
-  color: #800000;
+.left-company h2 {
+  margin: 0 0 4px 0;
+  font-size: 18px;
+  font-weight: bold;
 }
 
-.bill-to p, .invoice-meta p {
+.left-company p {
+  margin: 2px 0;
+  font-size: 12px;
+}
+
+.right-logo img {
+  max-width: 180px;
+  max-height: 90px;
+}
+
+.text-logo-box {
+  background: #002060;
+  color: white;
+  text-align: center;
+  padding: 6px 15px;
+  border-radius: 4px;
+}
+
+.text-logo-box h1 { margin: 0; font-size: 24px; }
+.text-logo-box .red-bar { background: #900; font-size: 11px; font-weight: bold; margin: 2px 0; }
+.text-logo-box p { margin: 0; font-size: 8px; }
+
+/* Bill To & Invoice Info block */
+.info-block {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
+
+.bill-to-box {
+  width: 55%;
+}
+
+.section-header {
+  font-weight: bold;
+  font-size: 12px;
+  margin-bottom: 5px;
+}
+
+.bill-to-box p, .invoice-meta-box p {
   margin: 3px 0;
   font-size: 12px;
 }
 
-input {
-  border: 1px solid #ccc;
-  padding: 2px 4px;
+input[type="text"], input[type="date"] {
+  border: none;
+  border-bottom: 1px solid #aaa;
   font-size: 12px;
+  padding: 1px 3px;
 }
 
-/* Matching the table styling with dark red header */
+.invoice-meta-box {
+  width: 35%;
+}
+
+.invoice-meta-box p strong {
+  color: #800000;
+}
+
+/* Table styling with dark red header */
 .items-table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 5px;
+  margin-top: 10px;
 }
 
 .items-table th {
-  background-color: #800000; /* Dark Red match */
+  background-color: #800000;
   color: #ffffff;
-  padding: 6px;
-  font-size: 12px;
+  padding: 6px 8px;
+  font-size: 11px;
   text-align: left;
+  font-weight: bold;
 }
 
 .items-table th:not(:first-child) {
@@ -99,33 +132,70 @@ input {
 }
 
 .items-table td {
-  border: 1px solid #000;
+  border: 1px solid #999;
   padding: 4px 6px;
   font-size: 11px;
 }
 
 .items-table td input {
   border: none;
-  background: transparent;
   width: 100%;
+  font-size: 11px;
+  background: transparent;
 }
 
 .items-table td:not(:first-child) {
   text-align: right;
 }
 
-.bottom-section {
+/* Bottom section: Terms and Calculations */
+.bottom-block {
   display: flex;
   justify-content: space-between;
   margin-top: 15px;
 }
 
-.terms { width: 55%; font-size: 10px; }
-.terms h4 { margin: 5px 0 2px 0; font-size: 11px; }
-.terms ul { padding-left: 15px; margin: 3px 0; }
-.terms li { margin-bottom: 2px; }
+.terms-left {
+  width: 58%;
+  font-size: 10px;
+  line-height: 1.3;
+}
 
-.totals { width: 40%; font-size: 12px; }
-.totals p { display: flex; justify-content: space-between; margin: 4px 0; }
-.totals input { width: 70px; text-align: right; }
-.totals h3 { display: flex; justify-content: space-between; font-size: 14px; margin-top: 5px; }
+.terms-left h4 {
+  margin: 6px 0 4px 0;
+  font-size: 11px;
+}
+
+.terms-left p {
+  margin: 2px 0;
+}
+
+.advance-text {
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+
+.totals-right {
+  width: 38%;
+  font-size: 12px;
+}
+
+.totals-right p {
+  display: flex;
+  justify-content: space-between;
+  margin: 4px 0;
+}
+
+.totals-right input {
+  width: 65px;
+  text-align: right;
+  border: 1px solid #ccc;
+}
+
+.total-row {
+  display: flex;
+  justify-content: space-between;
+  font-weight: bold;
+  font-size: 13px;
+  margin-top: 5px;
+}
