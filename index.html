@@ -2,817 +2,97 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Food Distribution & Order System</title>
-  <!-- Tailwind CSS for styling -->
-  <script src="https://cdn.tailwindcss.com"></script>
+  <title>Saif Centralac - Invoice Generator</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- Libraries for PDF generation and Excel export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
-<body class="bg-slate-100 min-h-screen text-slate-800 font-sans">
+<body>
 
-  <!-- TOP NAV HEADER -->
-  <header class="bg-slate-900 text-white p-4 shadow-md border-b border-slate-800">
-    <div class="max-w-7xl mx-auto flex justify-between items-center">
-      <h1 class="text-xl font-bold flex items-center gap-2 tracking-wide">
-        📦 Fresh Distro Hub <span class="text-xs font-normal text-slate-400">Enterprise Edition</span>
-      </h1>
-      <div class="flex gap-2">
-        <button onclick="switchView('admin')" id="nav-admin-btn" class="px-4 py-2 text-sm font-semibold rounded bg-blue-600 text-white shadow">
-          Admin / Dispatch Portal
-        </button>
-        <button onclick="switchView('client')" id="nav-client-btn" class="px-4 py-2 text-sm font-semibold rounded bg-slate-800 text-slate-300 hover:text-white">
-          Client Ordering Portal
-        </button>
+  <div class="actions no-print">
+    <button onclick="saveAndPrint()" class="btn-primary">Save & Download PDF</button>
+    <button onclick="exportStatement()" class="btn-secondary">Download Statement of Account (Excel)</button>
+    <button onclick="resetForm()" class="btn-reset">New Invoice</button>
+  </div>
+
+  <!-- INVOICE CONTAINER TO PRINT -->
+  <div id="invoice" class="invoice-box">
+    
+    <!-- Header -->
+    <div class="header">
+      <div class="company-details">
+        <h2>Saif Centralac</h2>
+        <p>Air Conditioner</p>
+        <p>Jileeb Abbasiya, Block 1 Street 238</p>
+        <p>Mob. 65704705</p>
+      </div>
+      <div class="logo-section">
+        <h1>Saif</h1>
+        <span>CENTRALAC</span>
+        <p>AC REPAIR & SERVICE</p>
       </div>
     </div>
-  </header>
 
-  <main class="max-w-7xl mx-auto p-4 md:p-6">
+    <hr>
 
-    <!-- ========================================== -->
-    <!-- 1. ADMIN / DISPATCH PORTAL VIEW            -->
-    <!-- ========================================== -->
-    <div id="admin-view" class="space-y-6">
-
-      <!-- Admin Sub-Navigation -->
-      <div class="flex flex-wrap border-b border-gray-300 gap-4">
-        <button onclick="switchAdminTab('register')" id="tab-reg-btn" class="pb-2 font-bold text-blue-600 border-b-2 border-blue-600">
-          + Register Client Company
-        </button>
-        <button onclick="switchAdminTab('inventory')" id="tab-inv-btn" class="pb-2 font-semibold text-gray-500 hover:text-gray-800">
-          Live Inventory Ledger & Value
-        </button>
-        <button onclick="switchAdminTab('approvals')" id="tab-app-btn" class="pb-2 font-semibold text-gray-500 hover:text-gray-800 flex items-center gap-1">
-          Pending Approvals <span id="pending-badge" class="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">0</span>
-        </button>
-        <button onclick="switchAdminTab('reports')" id="tab-rep-btn" class="pb-2 font-semibold text-gray-500 hover:text-gray-800">
-          Grouped Delivery Reports
-        </button>
-        <button onclick="switchAdminTab('monthly')" id="tab-mon-btn" class="pb-2 font-semibold text-gray-500 hover:text-gray-800">
-          Monthly Client Matrix & MoM
-        </button>
+    <!-- Client Info & Meta -->
+    <div class="info-grid">
+      <div class="bill-to">
+        <h3>BILL TO</h3>
+        <p><strong>Contact Name:</strong> <input type="text" id="contactName" placeholder="Enter Contact Name"></p>
+        <p><strong>Client Company Name:</strong> <input type="text" id="clientCompany" placeholder="Enter Company Name"></p>
+        <p><strong>Address:</strong> <input type="text" id="clientAddress" placeholder="Enter Address"></p>
+        <p><strong>Phone:</strong> <input type="text" id="clientPhone" placeholder="Enter Mobile No"></p>
       </div>
-
-      <!-- TAB 1: REGISTER CLIENT COMPANY -->
-      <div id="admin-register-tab" class="bg-white p-6 rounded-lg shadow">
-        <h2 class="text-lg font-bold text-slate-900 mb-4">Register New Supplier / Client Company</h2>
-        
-        <form id="add-company-form" onsubmit="handleRegisterCompany(event)" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-xs font-bold uppercase text-gray-600 mb-1">Company Name *</label>
-            <input type="text" id="comp-name" required class="w-full border p-2 rounded text-sm" placeholder="e.g. Grand Bistro Restaurant">
-          </div>
-
-          <div>
-            <label class="block text-xs font-bold uppercase text-gray-600 mb-1">Company Address *</label>
-            <input type="text" id="comp-address" required class="w-full border p-2 rounded text-sm" placeholder="Building No, Street, City">
-          </div>
-
-          <div>
-            <label class="block text-xs font-bold uppercase text-gray-600 mb-1">Contact Person Name *</label>
-            <input type="text" id="comp-contact" required class="w-full border p-2 rounded text-sm" placeholder="John Doe">
-          </div>
-
-          <div>
-            <label class="block text-xs font-bold uppercase text-gray-600 mb-1">Email Address *</label>
-            <input type="email" id="comp-email" required class="w-full border p-2 rounded text-sm" placeholder="john@grandbistro.com">
-          </div>
-
-          <div>
-            <label class="block text-xs font-bold uppercase text-gray-600 mb-1">Mobile No. *</label>
-            <input type="tel" id="comp-mobile" required class="w-full border p-2 rounded text-sm" placeholder="+123 456 7890">
-          </div>
-
-          <div>
-            <label class="block text-xs font-bold uppercase text-gray-600 mb-1">Store Keeper Mobile No. *</label>
-            <input type="tel" id="comp-storekeeper" required class="w-full border p-2 rounded text-sm" placeholder="+123 987 6543">
-          </div>
-
-          <hr class="md:col-span-2 border-gray-200 my-2">
-          <h3 class="md:col-span-2 text-sm font-bold text-slate-800">Client Portal Login Credentials</h3>
-
-          <div>
-            <label class="block text-xs font-bold uppercase text-gray-600 mb-1">Assign Username *</label>
-            <input type="text" id="comp-user" required class="w-full border p-2 rounded text-sm bg-gray-50" placeholder="grandbistro_admin">
-          </div>
-
-          <div>
-            <label class="block text-xs font-bold uppercase text-gray-600 mb-1">Assign Password *</label>
-            <input type="password" id="comp-pass" required class="w-full border p-2 rounded text-sm bg-gray-50" placeholder="••••••••">
-          </div>
-
-          <div class="md:col-span-2 mt-2">
-            <button type="submit" class="w-full bg-green-600 text-white font-bold py-2.5 rounded hover:bg-green-700 transition">
-              Save Company & Create Account
-            </button>
-          </div>
-        </form>
-
-        <!-- Registered Companies List -->
-        <div class="mt-8">
-          <h3 class="font-bold text-slate-800 text-md mb-3">Registered Client Companies (<span id="comp-count">1</span>/30)</h3>
-          <div class="overflow-x-auto border rounded-lg">
-            <table class="w-full text-left text-sm">
-              <thead class="bg-slate-800 text-white text-xs uppercase">
-                <tr>
-                  <th class="p-3">Company</th>
-                  <th class="p-3">Contact Person</th>
-                  <th class="p-3">Email & Mobile</th>
-                  <th class="p-3">Store Keeper Contact</th>
-                  <th class="p-3">Username</th>
-                </tr>
-              </thead>
-              <tbody id="company-table-body" class="divide-y divide-gray-200">
-                <!-- Dynamically populated -->
-              </tbody>
-            </table>
-          </div>
-        </div>
+      <div class="invoice-meta">
+        <p><strong>DATE:</strong> <input type="date" id="invoiceDate"></p>
+        <p><strong>Invoice NO.:</strong> <input type="text" id="invoiceNo" readonly></p>
       </div>
-
-      <!-- TAB 2: INVENTORY LEDGER & VALUE -->
-      <div id="admin-inventory-tab" class="bg-white p-6 rounded-lg shadow hidden space-y-6">
-        <h2 class="text-lg font-bold text-slate-900">Automatic Inventory Tracking & Stock Valuation</h2>
-        
-        <!-- Summary Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <span class="text-xs font-bold text-blue-600 uppercase">Total Unique Items</span>
-            <div id="summary-total-items" class="text-2xl font-extrabold text-blue-900">0</div>
-          </div>
-          <div class="p-4 bg-green-50 border border-green-200 rounded-lg">
-            <span class="text-xs font-bold text-green-600 uppercase">Total Stock Quantity</span>
-            <div id="summary-total-qty" class="text-2xl font-extrabold text-green-900">0 Units</div>
-          </div>
-          <div class="p-4 bg-purple-50 border border-purple-200 rounded-lg">
-            <span class="text-xs font-bold text-purple-600 uppercase">Total Inventory Financial Value</span>
-            <div id="summary-total-val" class="text-2xl font-extrabold text-purple-900">$0.00</div>
-          </div>
-        </div>
-
-        <div class="overflow-x-auto border rounded-lg">
-          <table class="w-full text-left text-sm">
-            <thead class="bg-slate-800 text-white text-xs uppercase">
-              <tr>
-                <th class="p-3">Item Code</th>
-                <th class="p-3">Item Name</th>
-                <th class="p-3">Origin</th>
-                <th class="p-3">Unit Price ($)</th>
-                <th class="p-3">Total Stock</th>
-                <th class="p-3 text-red-300">Approved Out</th>
-                <th class="p-3 text-green-300">Remaining Balance</th>
-                <th class="p-3">Total Value ($)</th>
-                <th class="p-3">Status</th>
-              </tr>
-            </thead>
-            <tbody id="inventory-table-body" class="divide-y divide-gray-200">
-              <!-- Dynamically populated -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- TAB 3: PENDING APPROVALS & DISPATCH QUANTITY MODIFIER -->
-      <div id="admin-approvals-tab" class="bg-white p-6 rounded-lg shadow hidden">
-        <h2 class="text-lg font-bold text-slate-900 mb-1">Pending Client Orders - Dispatch Approval</h2>
-        <p class="text-xs text-gray-500 mb-4">Set the deliverable quantity for each requested item before approving.</p>
-        <div class="overflow-x-auto border rounded-lg">
-          <table class="w-full text-left text-sm">
-            <thead class="bg-slate-800 text-white text-xs uppercase">
-              <tr>
-                <th class="p-3">Company</th>
-                <th class="p-3">Item Code & Name</th>
-                <th class="p-3">Requested Qty</th>
-                <th class="p-3">Available Stock</th>
-                <th class="p-3">Deliverable Qty</th>
-                <th class="p-3">Delivery Date</th>
-                <th class="p-3">Actions</th>
-              </tr>
-            </thead>
-            <tbody id="approvals-table-body" class="divide-y divide-gray-200">
-              <!-- Dynamically populated -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- TAB 4: GROUPED DELIVERY REPORT & BEST SELLER -->
-      <div id="admin-reports-tab" class="bg-white p-6 rounded-lg shadow hidden space-y-6">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-            <span class="text-xs font-bold text-amber-700 uppercase">🔥 Best Selling Item</span>
-            <div id="best-selling-item" class="text-xl font-bold text-amber-900">N/A</div>
-          </div>
-          <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
-            <span class="text-xs font-bold text-emerald-700 uppercase">🏆 Top Consuming Customer</span>
-            <div id="top-customer-name" class="text-xl font-bold text-emerald-900">N/A</div>
-          </div>
-        </div>
-
-        <div class="flex justify-between items-center border-t pt-4">
-          <div>
-            <h2 class="text-lg font-bold text-slate-900">Next Delivery Schedule (Grouped by Company)</h2>
-            <p class="text-xs text-gray-500">Multiple orders from the same company consolidated into one delivery sheet.</p>
-          </div>
-          <button onclick="window.print()" class="bg-slate-800 text-white px-3 py-1.5 text-xs font-bold rounded hover:bg-slate-700">
-            🖨️ Print Dispatch List
-          </button>
-        </div>
-        <div id="delivery-report-container" class="space-y-4">
-          <!-- Dynamically populated per company -->
-        </div>
-      </div>
-
-      <!-- TAB 5: MONTHLY CLIENT MATRIX REPORT & MOM COMPARISON -->
-      <div id="admin-monthly-tab" class="bg-white p-6 rounded-lg shadow hidden">
-        <div class="flex justify-between items-center mb-4">
-          <div>
-            <h2 class="text-lg font-bold text-slate-900">Client Monthly Quantity Consumption & Value Report</h2>
-            <p class="text-xs text-gray-500">Client names vertically | Months horizontally (Jan - Mar) with MoM comparison</p>
-          </div>
-        </div>
-        <div class="overflow-x-auto border rounded-lg">
-          <table class="w-full text-left text-xs">
-            <thead class="bg-slate-800 text-white uppercase">
-              <tr>
-                <th class="p-3 border-r border-slate-700 min-w-[180px]">Client Name</th>
-                <th class="p-3 text-center border-r border-slate-700" colSpan="2">January</th>
-                <th class="p-3 text-center border-r border-slate-700" colSpan="2">February</th>
-                <th class="p-3 text-center border-r border-slate-700" colSpan="2">March (Current)</th>
-                <th class="p-3 text-center bg-blue-900">MoM Qty Compare (Feb vs Mar)</th>
-              </tr>
-              <tr class="bg-slate-700 text-slate-200 text-[10px]">
-                <th class="p-2 border-r border-slate-600"></th>
-                <th class="p-2 text-center border-r border-slate-600">Qty</th>
-                <th class="p-2 text-center border-r border-slate-600">Amount ($)</th>
-                <th class="p-2 text-center border-r border-slate-600">Qty</th>
-                <th class="p-2 text-center border-r border-slate-600">Amount ($)</th>
-                <th class="p-2 text-center border-r border-slate-600">Qty</th>
-                <th class="p-2 text-center border-r border-slate-600">Amount ($)</th>
-                <th class="p-2 text-center bg-blue-800">% Change</th>
-              </tr>
-            </thead>
-            <tbody id="monthly-matrix-body" class="divide-y divide-gray-200 font-mono">
-              <!-- Dynamically populated -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-
     </div>
 
-    <!-- ========================================== -->
-    <!-- 2. CLIENT ORDER PORTAL (PROFESSIONAL DARK) -->
-    <!-- ========================================== -->
-    <div id="client-view" class="hidden max-w-3xl mx-auto space-y-6">
-      
-      <!-- Login Box -->
-      <div id="client-login-card" class="bg-slate-900 border border-slate-800 p-8 rounded-xl shadow-2xl text-slate-100">
-        <div class="text-center mb-6">
-          <span class="inline-block p-3 bg-blue-600/20 text-blue-400 rounded-full mb-2">🏢</span>
-          <h2 class="text-xl font-bold tracking-tight text-white">Client Portal Secure Login</h2>
-          <p class="text-xs text-slate-400 mt-1">Select your company credentials to access item catalog.</p>
-        </div>
-        
-        <form onsubmit="handleClientLogin(event)" class="space-y-5">
-          <div>
-            <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Select Your Company</label>
-            <select id="login-company-select" class="w-full border border-slate-700 bg-slate-800 text-white p-3 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-              <!-- Dynamically filled -->
-            </select>
-          </div>
-          <div>
-            <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Password</label>
-            <input type="password" id="login-password" required class="w-full border border-slate-700 bg-slate-800 text-white p-3 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Enter assigned password">
-          </div>
-          <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-500 shadow-lg transition">
-            Log In to Ordering Hub
-          </button>
-        </form>
-      </div>
-
-      <!-- Order Form & Notifications (Hidden until login) -->
-      <div id="client-order-card" class="bg-slate-900 border border-slate-800 p-8 rounded-xl shadow-2xl text-slate-100 hidden space-y-6">
-        <div class="flex justify-between items-center border-b border-slate-800 pb-4">
-          <div>
-            <span class="text-xs text-blue-400 font-bold uppercase tracking-widest">Authenticated Client</span>
-            <h2 id="active-client-name" class="text-xl font-bold text-white">Company Name</h2>
-          </div>
-          <button onclick="logoutClient()" class="text-xs bg-slate-800 hover:bg-slate-700 text-red-400 px-3 py-1.5 rounded font-semibold transition">Sign Out</button>
-        </div>
-
-        <!-- Notification Feed -->
-        <div id="client-notifications" class="space-y-2">
-          <!-- Live order alerts shown here -->
-        </div>
-
-        <form onsubmit="handlePlaceOrder(event)" class="space-y-4 border-t border-slate-800 pt-4">
-          <h3 class="text-sm font-bold text-slate-300 uppercase tracking-wider">Place New Food Supply Order</h3>
-          
-          <div>
-            <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Select Item (Item Name - Code | Origin)</label>
-            <select id="order-item-select" class="w-full border border-slate-700 bg-slate-800 text-white p-3 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-              <!-- Dynamically filled without stock details -->
-            </select>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Requested Quantity</label>
-              <input type="number" id="order-quantity" min="1" value="10" required class="w-full border border-slate-700 bg-slate-800 text-white p-3 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-            </div>
-
-            <div>
-              <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Requested Delivery Date</label>
-              <input type="date" id="order-date" required class="w-full border border-slate-700 bg-slate-800 text-white p-3 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-            </div>
-          </div>
-
-          <button type="submit" id="submit-order-btn" class="w-full bg-emerald-600 text-white font-bold py-3 rounded-lg hover:bg-emerald-500 shadow-lg transition">
-            Submit Order for Dispatch Approval
-          </button>
-        </form>
-
-        <!-- Client Order History -->
-        <div class="border-t border-slate-800 pt-4">
-          <h3 class="text-sm font-bold text-slate-300 uppercase tracking-wider mb-3">Order History & Approved Delivery Qty</h3>
-          <div class="overflow-x-auto border border-slate-800 rounded-lg bg-slate-950">
-            <table class="w-full text-left text-xs">
-              <thead class="bg-slate-800 text-slate-300 uppercase">
-                <tr>
-                  <th class="p-3">Item Name</th>
-                  <th class="p-3">Req Qty</th>
-                  <th class="p-3 text-emerald-400">Approved Qty</th>
-                  <th class="p-3">Delivery Date</th>
-                  <th class="p-3">Status</th>
-                </tr>
-              </thead>
-              <tbody id="client-order-history" class="divide-y divide-slate-800 text-slate-300">
-                <!-- Dynamically populated -->
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-      </div>
-
-    </div>
-
-  </main>
-
-  <!-- JAVASCRIPT LOGIC -->
-  <script>
-    // --- APP DATA STATE ---
-    let companies = [
-      {
-        id: '1',
-        name: 'Grand Bistro Hotel',
-        address: '123 Ocean Drive, Bay Area',
-        contact: 'John Doe',
-        email: 'john@grandbistro.com',
-        mobile: '+1 555-0192',
-        storekeeper: '+1 555-0199',
-        user: 'grandbistro',
-        pass: '1234',
-        monthly: {
-          jan: { qty: 150, amount: 750 },
-          feb: { qty: 200, amount: 1000 },
-          mar: { qty: 250, amount: 1250 }
-        }
-      },
-      {
-        id: '2',
-        name: 'Green Cafe & Bakery',
-        address: '45 Park Avenue, City Center',
-        contact: 'Sarah Smith',
-        email: 'sarah@greencafe.com',
-        mobile: '+1 555-0244',
-        storekeeper: '+1 555-0255',
-        user: 'greencafe',
-        pass: '1234',
-        monthly: {
-          jan: { qty: 90, amount: 450 },
-          feb: { qty: 120, amount: 600 },
-          mar: { qty: 110, amount: 550 }
-        }
-      }
-    ];
-
-    let inventory = [
-      { code: 'FD-101', name: 'Fresh Milk (1L Bottle)', origin: 'New Zealand', unitPrice: 3.50, stock: 500, outToday: 0 },
-      { code: 'FD-102', name: 'Grade A Eggs (Tray 30)', origin: 'USA', unitPrice: 6.00, stock: 1200, outToday: 0 },
-      { code: 'FD-103', name: 'Whole Wheat Bread (Sliced)', origin: 'Local Bakery', unitPrice: 2.20, stock: 0, outToday: 0 }, // Out of stock
-      { code: 'FD-104', name: 'Cheddar Cheese Block (1kg)', origin: 'France', unitPrice: 12.00, stock: 450, outToday: 0 }
-    ];
-
-    let orders = [
-      {
-        id: 'ord-101',
-        companyId: '1',
-        companyName: 'Grand Bistro Hotel',
-        storekeeper: '+1 555-0199',
-        address: '123 Ocean Drive, Bay Area',
-        itemCode: 'FD-101',
-        itemName: 'Fresh Milk (1L Bottle)',
-        requestedQty: 50,
-        approvedQty: 50,
-        unitPrice: 3.50,
-        deliveryDate: '2026-08-09',
-        status: 'Approved' // Pending, Approved, Rejected
-      }
-    ];
-
-    let loggedInCompany = null;
-
-    // Set Default Delivery Date to Tomorrow
-    document.getElementById('order-date').valueAsDate = new Date(Date.now() + 86400000);
-
-    // --- NAVIGATION SWITCHING ---
-    function switchView(view) {
-      document.getElementById('admin-view').classList.toggle('hidden', view !== 'admin');
-      document.getElementById('client-view').classList.toggle('hidden', view !== 'client');
-      
-      document.getElementById('nav-admin-btn').className = view === 'admin' 
-        ? 'px-4 py-2 text-sm font-semibold rounded bg-blue-600 text-white shadow' 
-        : 'px-4 py-2 text-sm font-semibold rounded bg-slate-800 text-slate-300 hover:text-white';
-      
-      document.getElementById('nav-client-btn').className = view === 'client' 
-        ? 'px-4 py-2 text-sm font-semibold rounded bg-blue-600 text-white shadow' 
-        : 'px-4 py-2 text-sm font-semibold rounded bg-slate-800 text-slate-300 hover:text-white';
-
-      if (view === 'client') updateClientSelectDropdown();
-    }
-
-    function switchAdminTab(tab) {
-      document.getElementById('admin-register-tab').classList.toggle('hidden', tab !== 'register');
-      document.getElementById('admin-inventory-tab').classList.toggle('hidden', tab !== 'inventory');
-      document.getElementById('admin-approvals-tab').classList.toggle('hidden', tab !== 'approvals');
-      document.getElementById('admin-reports-tab').classList.toggle('hidden', tab !== 'reports');
-      document.getElementById('admin-monthly-tab').classList.toggle('hidden', tab !== 'monthly');
-
-      document.getElementById('tab-reg-btn').className = tab === 'register' ? 'pb-2 font-bold text-blue-600 border-b-2 border-blue-600' : 'pb-2 font-semibold text-gray-500 hover:text-gray-800';
-      document.getElementById('tab-inv-btn').className = tab === 'inventory' ? 'pb-2 font-bold text-blue-600 border-b-2 border-blue-600' : 'pb-2 font-semibold text-gray-500 hover:text-gray-800';
-      document.getElementById('tab-app-btn').className = tab === 'approvals' ? 'pb-2 font-bold text-blue-600 border-b-2 border-blue-600 flex items-center gap-1' : 'pb-2 font-semibold text-gray-500 hover:text-gray-800 flex items-center gap-1';
-      document.getElementById('tab-rep-btn').className = tab === 'reports' ? 'pb-2 font-bold text-blue-600 border-b-2 border-blue-600' : 'pb-2 font-semibold text-gray-500 hover:text-gray-800';
-      document.getElementById('tab-mon-btn').className = tab === 'monthly' ? 'pb-2 font-bold text-blue-600 border-b-2 border-blue-600' : 'pb-2 font-semibold text-gray-500 hover:text-gray-800';
-    }
-
-    // --- ADMIN REGISTER COMPANY ---
-    function handleRegisterCompany(e) {
-      e.preventDefault();
-      const newCompany = {
-        id: Date.now().toString(),
-        name: document.getElementById('comp-name').value,
-        address: document.getElementById('comp-address').value,
-        contact: document.getElementById('comp-contact').value,
-        email: document.getElementById('comp-email').value,
-        mobile: document.getElementById('comp-mobile').value,
-        storekeeper: document.getElementById('comp-storekeeper').value,
-        user: document.getElementById('comp-user').value,
-        pass: document.getElementById('comp-pass').value,
-        monthly: { jan: { qty: 0, amount: 0 }, feb: { qty: 0, amount: 0 }, mar: { qty: 0, amount: 0 } }
-      };
-
-      companies.push(newCompany);
-      document.getElementById('add-company-form').reset();
-      alert(`Company "${newCompany.name}" successfully registered!`);
-      renderTables();
-    }
-
-    // --- CLIENT LOGIN & ORDERING (HIDDEN STOCK FROM CLIENT) ---
-    function updateClientSelectDropdown() {
-      const select = document.getElementById('login-company-select');
-      select.innerHTML = companies.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
-      
-      const itemSelect = document.getElementById('order-item-select');
-      // Stock quantity is completely hidden from client view
-      itemSelect.innerHTML = inventory.map(i => {
-        return `<option value="${i.code}">
-          ${i.name} [Code: ${i.code}] - Origin: ${i.origin}
-        </option>`;
-      }).join('');
-    }
-
-    function handleClientLogin(e) {
-      e.preventDefault();
-      const companyId = document.getElementById('login-company-select').value;
-      const pass = document.getElementById('login-password').value;
-      const targetCompany = companies.find(c => c.id === companyId);
-
-      if (targetCompany && targetCompany.pass === pass) {
-        loggedInCompany = targetCompany;
-        document.getElementById('active-client-name').innerText = targetCompany.name;
-        document.getElementById('client-login-card').classList.add('hidden');
-        document.getElementById('client-order-card').classList.remove('hidden');
-        renderClientView();
-      } else {
-        alert('Incorrect password for selected company!');
-      }
-    }
-
-    function logoutClient() {
-      loggedInCompany = null;
-      document.getElementById('client-login-card').classList.remove('hidden');
-      document.getElementById('client-order-card').classList.add('hidden');
-      document.getElementById('login-password').value = '';
-    }
-
-    function handlePlaceOrder(e) {
-      e.preventDefault();
-      const itemCode = document.getElementById('order-item-select').value;
-      const quantity = parseInt(document.getElementById('order-quantity').value);
-      const deliveryDate = document.getElementById('order-date').value;
-
-      const item = inventory.find(i => i.code === itemCode);
-      if (item) {
-        orders.push({
-          id: 'ord-' + Date.now().toString().slice(-4),
-          companyId: loggedInCompany.id,
-          companyName: loggedInCompany.name,
-          storekeeper: loggedInCompany.storekeeper,
-          address: loggedInCompany.address,
-          itemCode: item.code,
-          itemName: item.name,
-          requestedQty: quantity,
-          approvedQty: 0,
-          unitPrice: item.unitPrice,
-          deliveryDate: deliveryDate,
-          status: 'Pending'
-        });
-
-        alert(`Order submitted successfully! Awaiting dispatch approval.`);
-        renderClientView();
-        renderTables();
-      }
-    }
-
-    // --- APPROVAL & PARTIAL DISPATCH ACTIONS ---
-    function approveOrderWithQty(orderId) {
-      const order = orders.find(o => o.id === orderId);
-      if (!order) return;
-
-      const inputElement = document.getElementById(`deliver-qty-${orderId}`);
-      const deliverableQty = parseInt(inputElement.value);
-
-      if (isNaN(deliverableQty) || deliverableQty < 0) {
-        alert('Please enter a valid deliverable quantity.');
-        return;
-      }
-
-      const item = inventory.find(i => i.code === order.itemCode);
-      if (item) {
-        const availableStock = item.stock - item.outToday;
-        if (deliverableQty > availableStock) {
-          alert(`Cannot deliver ${deliverableQty} units! Only ${availableStock} units available in stock.`);
-          return;
-        }
-
-        item.outToday += deliverableQty;
-        order.approvedQty = deliverableQty;
-        order.status = 'Approved';
-
-        // Update client monthly performance metrics
-        const client = companies.find(c => c.id === order.companyId);
-        if (client) {
-          client.monthly.mar.qty += deliverableQty;
-          client.monthly.mar.amount += (deliverableQty * order.unitPrice);
-        }
-      }
-
-      renderTables();
-      if (loggedInCompany) renderClientView();
-    }
-
-    function rejectOrder(orderId) {
-      const order = orders.find(o => o.id === orderId);
-      if (order) {
-        order.status = 'Rejected';
-        order.approvedQty = 0;
-        renderTables();
-        if (loggedInCompany) renderClientView();
-      }
-    }
-
-    // --- RENDER CLIENT VIEW (NOTIFICATIONS & HISTORY) ---
-    function renderClientView() {
-      const myOrders = orders.filter(o => o.companyId === loggedInCompany.id);
-      
-      // Notifications
-      const notifBox = document.getElementById('client-notifications');
-      const latestApproved = myOrders.filter(o => o.status === 'Approved');
-      const latestRejected = myOrders.filter(o => o.status === 'Rejected');
-
-      notifBox.innerHTML = '';
-      if (latestApproved.length > 0) {
-        const lastApp = latestApproved[latestApproved.length - 1];
-        notifBox.innerHTML += `
-          <div class="p-3 bg-emerald-950 border border-emerald-800 text-emerald-300 rounded text-xs flex justify-between items-center">
-            <span>✅ <strong>Order Accepted!</strong> Order for ${lastApp.itemName} has been approved for delivery of <strong>${lastApp.approvedQty} units</strong> on ${lastApp.deliveryDate}.</span>
-          </div>
-        `;
-      }
-      if (latestRejected.length > 0) {
-        notifBox.innerHTML += `
-          <div class="p-3 bg-red-950 border border-red-800 text-red-300 rounded text-xs flex justify-between items-center">
-            <span>⚠️ <strong>Order Declined:</strong> Order for ${latestRejected[latestRejected.length - 1].itemName} could not be fulfilled at this time.</span>
-          </div>
-        `;
-      }
-
-      // Order History Table
-      document.getElementById('client-order-history').innerHTML = myOrders.map(o => `
+    <!-- Line Items Table -->
+    <table class="items-table">
+      <thead>
         <tr>
-          <td class="p-3 font-semibold text-slate-200">${o.itemName} <span class="text-slate-500">(${o.itemCode})</span></td>
-          <td class="p-3 font-mono">${o.requestedQty}</td>
-          <td class="p-3 font-mono font-bold text-emerald-400">${o.status === 'Approved' ? o.approvedQty : '-'}</td>
-          <td class="p-3">${o.deliveryDate}</td>
-          <td class="p-3">
-            <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-              o.status === 'Approved' ? 'bg-emerald-900/80 text-emerald-300 border border-emerald-700' : 
-              o.status === 'Rejected' ? 'bg-red-900/80 text-red-300 border border-red-700' : 'bg-amber-900/80 text-amber-300 border border-amber-700'
-            }">${o.status}</span>
-          </td>
+          <th>DESCRIPTION</th>
+          <th width="80">QTY</th>
+          <th width="120">Per Unit</th>
+          <th width="120">TOTAL</th>
         </tr>
-      `).join('');
-    }
+      </thead>
+      <tbody id="itemsBody">
+        <!-- Rows dynamically added via JavaScript -->
+      </tbody>
+    </table>
 
-    // --- RENDER TABLES & REPORTS ---
-    function renderTables() {
-      // 1. Render Companies Table
-      document.getElementById('comp-count').innerText = companies.length;
-      document.getElementById('company-table-body').innerHTML = companies.map(c => `
-        <tr>
-          <td class="p-3 font-semibold">${c.name}<br><span class="text-xs text-gray-500">${c.address}</span></td>
-          <td class="p-3">${c.contact}</td>
-          <td class="p-3">${c.email}<br><span class="text-xs font-mono">${c.mobile}</span></td>
-          <td class="p-3 font-semibold text-blue-700">${c.storekeeper}</td>
-          <td class="p-3 font-mono bg-gray-50">${c.user}</td>
-        </tr>
-      `).join('');
+    <!-- Summary & Terms -->
+    <div class="bottom-section">
+      <div class="terms">
+        <p><strong>Advanced:</strong> <input type="text" id="advancePaid" placeholder="e.g. 700 KWD"></p>
+        <h4>Terms & Conditions (Summary)</h4>
+        <ul>
+          <li><strong>Scope of Work:</strong> AC repair and installation as per invoice.</li>
+          <li><strong>Warranty:</strong> 6 months on parts and labor; misuse not covered.</li>
+          <li><strong>Liability:</strong> Not responsible for pre-existing electrical/structural issues.</li>
+          <li><strong>Extra Service:</strong> Additional visits billed separately.</li>
+          <li><strong>Cancellation:</strong> 24-hour notice required; fees may apply.</li>
+          <li><strong>Customer Duties:</strong> Provide safe access and utilities during service.</li>
+        </ul>
+      </div>
 
-      // 2. Render Inventory Ledger & Summary Cards
-      let totalItems = inventory.length;
-      let totalQty = 0;
-      let totalVal = 0;
+      <div class="totals">
+        <p><span>SUBTOTAL</span> <span id="subtotal">0.000</span></p>
+        <p><span>DISCOUNT</span> <input type="number" id="discount" value="0" oninput="calculateTotals()"></p>
+        <p><span>HANDLING LIFTING</span> <input type="number" id="handling" value="0" oninput="calculateTotals()"></p>
+        <p><span>INSTALLATION</span> <input type="number" id="installation" value="0" oninput="calculateTotals()"></p>
+        <hr>
+        <h3><span>Total Amount</span> <span id="totalAmount">KWD 0.000</span></h3>
+      </div>
+    </div>
 
-      document.getElementById('inventory-table-body').innerHTML = inventory.map(i => {
-        const remaining = i.stock - i.outToday;
-        const itemVal = remaining * i.unitPrice;
-        totalQty += remaining;
-        totalVal += itemVal;
+  </div>
 
-        const isOut = remaining <= 0;
-
-        return `
-          <tr class="${isOut ? 'bg-red-50' : ''}">
-            <td class="p-3 font-mono font-bold text-blue-600">${i.code}</td>
-            <td class="p-3 font-medium">${i.name}</td>
-            <td class="p-3 text-gray-600 font-semibold">${i.origin}</td>
-            <td class="p-3 font-mono">$${i.unitPrice.toFixed(2)}</td>
-            <td class="p-3 font-semibold">${i.stock}</td>
-            <td class="p-3 font-bold text-red-600">-${i.outToday}</td>
-            <td class="p-3 font-bold text-green-600">${remaining}</td>
-            <td class="p-3 font-bold font-mono">$${itemVal.toFixed(2)}</td>
-            <td class="p-3">
-              ${isOut 
-                ? '<span class="bg-red-600 text-white text-[10px] px-2 py-0.5 rounded font-bold uppercase">Out of Stock</span>' 
-                : '<span class="bg-green-100 text-green-800 text-[10px] px-2 py-0.5 rounded font-bold uppercase">In Stock</span>'}
-            </td>
-          </tr>
-        `;
-      }).join('');
-
-      document.getElementById('summary-total-items').innerText = totalItems;
-      document.getElementById('summary-total-qty').innerText = totalQty + ' Units';
-      document.getElementById('summary-total-val').innerText = '$' + totalVal.toLocaleString(undefined, {minimumFractionDigits: 2});
-
-      // 3. Render Approvals Queue with Dispatch Modifiable Qty
-      const pendingOrders = orders.filter(o => o.status === 'Pending');
-      document.getElementById('pending-badge').innerText = pendingOrders.length;
-      document.getElementById('approvals-table-body').innerHTML = pendingOrders.map(o => {
-        const item = inventory.find(i => i.code === o.itemCode);
-        const stockOnHand = item ? (item.stock - item.outToday) : 0;
-        return `
-          <tr>
-            <td class="p-3 font-semibold text-slate-900">${o.companyName}</td>
-            <td class="p-3">[${o.itemCode}] ${o.itemName}</td>
-            <td class="p-3 font-bold text-blue-600">${o.requestedQty}</td>
-            <td class="p-3 font-semibold">${stockOnHand}</td>
-            <td class="p-3">
-              <input type="number" id="deliver-qty-${o.id}" value="${Math.min(o.requestedQty, stockOnHand)}" min="1" max="${stockOnHand}" class="w-20 border p-1 rounded text-center font-bold text-slate-800">
-            </td>
-            <td class="p-3 text-xs text-gray-600">${o.deliveryDate}</td>
-            <td class="p-3 space-x-2">
-              <button onclick="approveOrderWithQty('${o.id}')" class="bg-green-600 text-white text-xs px-2.5 py-1 rounded font-bold hover:bg-green-700">Approve & Deliver</button>
-              <button onclick="rejectOrder('${o.id}')" class="bg-red-600 text-white text-xs px-2.5 py-1 rounded font-bold hover:bg-red-700">Decline</button>
-            </td>
-          </tr>
-        `;
-      }).join('');
-      if (pendingOrders.length === 0) {
-        document.getElementById('approvals-table-body').innerHTML = '<tr><td colSpan="7" class="p-4 text-center text-gray-500">No pending orders waiting for dispatch approval.</td></tr>';
-      }
-
-      // 4. Render Best Seller & Top Customer
-      const approvedOrders = orders.filter(o => o.status === 'Approved');
-      if (approvedOrders.length > 0) {
-        // Calculate best item
-        const itemTotals = {};
-        approvedOrders.forEach(o => {
-          itemTotals[o.itemName] = (itemTotals[o.itemName] || 0) + o.approvedQty;
-        });
-        const bestItem = Object.keys(itemTotals).reduce((a, b) => itemTotals[a] > itemTotals[b] ? a : b);
-        document.getElementById('best-selling-item').innerText = `${bestItem} (${itemTotals[bestItem]} Units Delivered)`;
-
-        // Top Customer
-        const clientTotals = {};
-        approvedOrders.forEach(o => {
-          clientTotals[o.companyName] = (clientTotals[o.companyName] || 0) + o.approvedQty;
-        });
-        const topClient = Object.keys(clientTotals).reduce((a, b) => clientTotals[a] > clientTotals[b] ? a : b);
-        document.getElementById('top-customer-name').innerText = `${topClient} (${clientTotals[topClient]} Units Received)`;
-      }
-
-      // 5. Render Grouped Delivery Report by Company Name
-      const reportContainer = document.getElementById('delivery-report-container');
-      if (approvedOrders.length === 0) {
-        reportContainer.innerHTML = '<p class="text-gray-500 text-sm">No accepted orders ready for dispatch.</p>';
-      } else {
-        // Group orders by company name
-        const groupedByCompany = {};
-        approvedOrders.forEach(o => {
-          if (!groupedByCompany[o.companyName]) {
-            groupedByCompany[o.companyName] = {
-              address: o.address,
-              storekeeper: o.storekeeper,
-              deliveryDate: o.deliveryDate,
-              items: []
-            };
-          }
-          groupedByCompany[o.companyName].items.push(o);
-        });
-
-        reportContainer.innerHTML = Object.keys(groupedByCompany).map(companyName => {
-          const group = groupedByCompany[companyName];
-          return `
-            <div class="border border-slate-300 rounded-lg p-5 bg-slate-50 shadow-sm space-y-3">
-              <div class="flex justify-between items-start border-b border-slate-200 pb-2">
-                <div>
-                  <h3 class="font-extrabold text-slate-900 text-lg">${companyName}</h3>
-                  <p class="text-xs text-gray-600">📍 Address: ${group.address} | 📞 Storekeeper: ${group.storekeeper}</p>
-                </div>
-                <span class="text-xs font-bold bg-blue-600 text-white px-3 py-1 rounded-full uppercase">
-                  Delivery Date: ${group.deliveryDate}
-                </span>
-              </div>
-              <div class="space-y-1">
-                <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Consolidated Delivery Items:</span>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-1">
-                  ${group.items.map(item => `
-                    <div class="flex justify-between items-center bg-white border p-2 rounded text-xs">
-                      <span class="font-semibold text-slate-800">[${item.itemCode}] ${item.itemName}</span>
-                      <span class="font-mono font-extrabold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">${item.approvedQty} Units</span>
-                    </div>
-                  `).join('')}
-                </div>
-              </div>
-            </div>
-          `;
-        }).join('');
-      }
-
-      // 6. Render Monthly Client Matrix & MoM Comparison
-      document.getElementById('monthly-matrix-body').innerHTML = companies.map(c => {
-        const febQty = c.monthly.feb.qty;
-        const marQty = c.monthly.mar.qty;
-        
-        let momPercent = 0;
-        if (febQty > 0) {
-          momPercent = (((marQty - febQty) / febQty) * 100).toFixed(1);
-        } else if (marQty > 0) {
-          momPercent = 100;
-        }
-
-        const isPositive = momPercent >= 0;
-
-        return `
-          <tr>
-            <td class="p-3 font-semibold font-sans border-r text-slate-900">${c.name}</td>
-            <td class="p-3 text-center border-r">${c.monthly.jan.qty}</td>
-            <td class="p-3 text-center border-r text-gray-600">$${c.monthly.jan.amount.toFixed(2)}</td>
-            <td class="p-3 text-center border-r">${c.monthly.feb.qty}</td>
-            <td class="p-3 text-center border-r text-gray-600">$${c.monthly.feb.amount.toFixed(2)}</td>
-            <td class="p-3 text-center border-r font-bold text-blue-700">${c.monthly.mar.qty}</td>
-            <td class="p-3 text-center border-r font-bold text-blue-700">$${c.monthly.mar.amount.toFixed(2)}</td>
-            <td class="p-3 text-center font-bold ${isPositive ? 'text-green-600 bg-green-50' : 'text-red-600 bg-red-50'}">
-              ${isPositive ? '▲ +' : '▼ '}${momPercent}%
-            </td>
-          </tr>
-        `;
-      }).join('');
-    }
-
-    // Initial Table Load
-    renderTables();
-  </script>
+  <script src="script.js"></script>
 </body>
 </html>
