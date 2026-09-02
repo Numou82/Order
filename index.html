@@ -4,22 +4,21 @@
   <meta charset="UTF-8">
   <title>Saif Centralac - Invoice Generator</title>
   <link rel="stylesheet" href="style.css">
-  <!-- Libraries for PDF generation and Excel export -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
 
-  <div class="actions no-print">
+  <div class="actions">
     <button onclick="saveAndPrint()" class="btn-primary">Save & Download PDF</button>
     <button onclick="exportStatement()" class="btn-secondary">Download Statement of Account (Excel)</button>
     <button onclick="resetForm()" class="btn-reset">New Invoice</button>
   </div>
 
-  <!-- INVOICE CONTAINER TO PRINT -->
+  <!-- SINGLE PAGE CONTAINER -->
   <div id="invoice" class="invoice-box">
     
-    <!-- Header -->
+    <!-- Header with Image Logo -->
     <div class="header">
       <div class="company-details">
         <h2>Saif Centralac</h2>
@@ -28,22 +27,20 @@
         <p>Mob. 65704705</p>
       </div>
       <div class="logo-section">
-        <h1>Saif</h1>
-        <span>CENTRALAC</span>
-        <p>AC REPAIR & SERVICE</p>
+        <img src="logo.png" alt="Saif Centralac Logo" class="invoice-logo">
       </div>
     </div>
 
-    <hr>
+    <hr class="divider">
 
     <!-- Client Info & Meta -->
     <div class="info-grid">
       <div class="bill-to">
-        <h3>BILL TO</h3>
-        <p><strong>Contact Name:</strong> <input type="text" id="contactName" placeholder="Enter Contact Name"></p>
-        <p><strong>Client Company Name:</strong> <input type="text" id="clientCompany" placeholder="Enter Company Name"></p>
-        <p><strong>Address:</strong> <input type="text" id="clientAddress" placeholder="Enter Address"></p>
-        <p><strong>Phone:</strong> <input type="text" id="clientPhone" placeholder="Enter Mobile No"></p>
+        <h4 class="section-title">BILL TO</h4>
+        <p><strong>Contact Name:</strong> <input type="text" id="contactName" placeholder="Contact Name"></p>
+        <p><strong>Client Company Name:</strong> <input type="text" id="clientCompany" placeholder="Company Name"></p>
+        <p><strong>Address:</strong> <input type="text" id="clientAddress" placeholder="Address"></p>
+        <p><strong>Phone:</strong> <input type="text" id="clientPhone" placeholder="Mobile No"></p>
       </div>
       <div class="invoice-meta">
         <p><strong>DATE:</strong> <input type="date" id="invoiceDate"></p>
@@ -56,13 +53,13 @@
       <thead>
         <tr>
           <th>DESCRIPTION</th>
-          <th width="80">QTY</th>
-          <th width="120">Per Unit</th>
-          <th width="120">TOTAL</th>
+          <th width="60">QTY</th>
+          <th width="90">Per Unit</th>
+          <th width="100">TOTAL</th>
         </tr>
       </thead>
       <tbody id="itemsBody">
-        <!-- Rows dynamically added via JavaScript -->
+        <!-- Rows filled by script.js -->
       </tbody>
     </table>
 
