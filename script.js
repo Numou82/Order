@@ -1,7 +1,4 @@
 let itemsData = [
-  { desc: "Electric work with matreialmodel no60 (Machine provide by me)", qty: 1, unit: 1200 },
-  { desc: "ducting work with matreial", qty: 0, unit: 0 },
-  { desc: "copper work with commisining", qty: 0, unit: 0 }
 ];
 
 let canvas, ctx;
