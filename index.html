@@ -4,16 +4,17 @@
   <meta charset="UTF-8">
   <title>Saif Centralac - Invoice System</title>
   <link rel="stylesheet" href="style.css">
-  <!-- Excel Export Library -->
+  <!-- Excel Export & Canvas Libraries -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
 
-  <!-- ACTION BUTTONS (Hidden during PDF download) -->
+  <!-- ACTION BUTTONS -->
   <div class="actions no-print">
     <button onclick="saveAndDownloadPDF()" class="btn-primary">Save & Download PDF</button>
     <button onclick="exportStatement()" class="btn-secondary">Download Statement of Account (Excel)</button>
-    <button onclick="addNewRow()" class="btn-add">+ Add Description Row</button>
+    <button onclick="addNewRow()" class="btn-add">+ Add Row</button>
+    <button onclick="clearSignature()" class="btn-clear">Clear Signature</button>
     <button onclick="resetForm()" class="btn-reset">New Invoice</button>
   </div>
 
@@ -24,9 +25,8 @@
     <div class="header-row">
       <div class="left-company">
         <h2>Saif Centralac Air Conditioner</h2>
-        <p>Jileeb Abbasiya</p>
-        <p>Block 1 Street 238</p>
-        <p>Mob.65704705</p>
+        <p>Jileeb Abbasiya, Block 1 Street 238</p>
+        <p>Mob. 65704705</p>
       </div>
       <div class="right-logo">
         <img id="invoiceLogo" src="logo.png" alt="Saif Centralac Logo" onerror="this.style.display='none'; document.getElementById('textLogo').style.display='block';">
@@ -39,21 +39,18 @@
       </div>
     </div>
 
-    <!-- Bill To & Meta Section -->
+    <!-- Customer Details & Invoice Meta -->
     <div class="info-block">
       <div class="bill-to-box">
-        <div class="section-header">BILL TO</div>
-        <p><strong>Contact Name:</strong> <input type="text" id="contactName" placeholder="Enter Contact Name"></p>
-        <p><strong>Client Company Name:</strong> <input type="text" id="clientCompany" value="Smile Clinic"></p>
-        <p><strong>Address:</strong> <input type="text" id="clientAddress" value="Salmiya block 2"></p>
-        <p><strong>Phone:</strong> <input type="text" id="clientPhone" placeholder="Enter Mobile No"></p>
+        <div class="section-header">CUSTOMER DETAILS</div>
+        <p><strong>Customer Name:</strong> <input type="text" id="contactName" placeholder="Enter Customer Name"></p>
+        <p><strong>Address:</strong> <input type="text" id="clientAddress" placeholder="Enter Customer Address"></p>
+        <p><strong>Contact No:</strong> <input type="text" id="clientPhone" placeholder="Enter Mobile No"></p>
       </div>
 
       <div class="invoice-meta-box">
-        <p><strong>DATE</strong></p>
-        <p><input type="date" id="invoiceDate"></p>
-        <p><strong>Invoice NO.</strong></p>
-        <p><input type="text" id="invoiceNo" style="font-weight: bold; color: #800000;"></p>
+        <p><strong>DATE:</strong> <input type="date" id="invoiceDate"></p>
+        <p><strong>Invoice NO.:</strong> <input type="text" id="invoiceNo" readonly style="font-weight: bold; color: #800000;"></p>
       </div>
     </div>
 
@@ -65,24 +62,32 @@
           <th width="70">QTY</th>
           <th width="100">Per Unit</th>
           <th width="110">TOTAL</th>
-          <th width="40" class="no-print"></th>
+          <th width="35" class="no-print"></th>
         </tr>
       </thead>
       <tbody id="itemsBody">
-        <!-- Rows dynamically added by script.js -->
+        <!-- Rows dynamically added via JavaScript -->
       </tbody>
     </table>
 
-    <!-- Bottom Section: Terms & Calculations -->
+    <!-- Bottom Section: Terms, Calculations & Signature -->
     <div class="bottom-block">
       <div class="terms-left">
-        <p class="advance-text"><strong>Advanced:</strong> <input type="text" id="advancePaid" value="700KWD"></p>
-        <h4>Terms & Conditions (Summary)</h4>
+        <p class="advance-text"><strong>Advanced:</strong> <input type="text" id="advancePaid" placeholder="e.g. 700KWD"></p>
+        
+        <!-- Touch-enabled Signature Box -->
+        <div class="signature-section">
+          <h4>Customer Signature</h4>
+          <div class="signature-box">
+            <canvas id="sigCanvas" width="280" height="90"></canvas>
+            <img id="sigImage" alt="Customer Signature" style="display:none;">
+          </div>
+        </div>
+
+        <h4 style="margin-top: 10px;">Terms & Conditions (Summary)</h4>
         <p><strong>Scope of Work:</strong> AC repair and installation as per invoice.</p>
         <p><strong>Warranty:</strong> 6 months on parts and labor; misuse not covered.</p>
         <p><strong>Liability:</strong> Not responsible for pre-existing electrical/structural issues.</p>
-        <p><strong>Extra Service:</strong> Additional visits billed separately.</p>
-        <p><strong>Cancellation:</strong> 24-hour notice required; fees may apply.</p>
         <p><strong>Customer Duties:</strong> Provide safe access and utilities during service.</p>
       </div>
 
