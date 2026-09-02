@@ -1,4 +1,6 @@
+// Default items array started completely blank
 let itemsData = [
+  { desc: "", qty: "", unit: "" }
 ];
 
 let canvas, ctx;
@@ -26,26 +28,26 @@ function renderRows() {
   const tbody = document.getElementById('itemsBody');
   tbody.innerHTML = '';
 
-  // Render populated rows
+  // Render populated/starter rows
   itemsData.forEach((item, index) => {
     let row = `<tr>
       <td><input type="text" value="${item.desc}" id="desc_${index}" placeholder="Enter work description..."></td>
       <td><input type="number" value="${item.qty || ''}" id="qty_${index}" oninput="updateItem(${index})"></td>
       <td><input type="number" value="${item.unit || ''}" id="unit_${index}" oninput="updateItem(${index})"></td>
       <td id="total_${index}">0.000</td>
-      <td class="no-print" style="text-align:center;"><button onclick="deleteRow(${index})" class="btn-del">X</button></td>
+      <td class="no-print" style="text-align:center;"><button onclick="deleteRow(this)" class="btn-del">X</button></td>
     </tr>`;
     tbody.innerHTML += row;
   });
 
-  // Render default empty rows with delete buttons enabled
-  for (let i = itemsData.length; i < 7; i++) {
+  // Render empty rows with delete buttons enabled
+  for (let i = itemsData.length; i < 6; i++) {
     let emptyRow = `<tr>
       <td><input type="text" id="desc_${i}" placeholder="Enter description..."></td>
       <td><input type="number" id="qty_${i}" oninput="updateItem(${i})"></td>
       <td><input type="number" id="unit_${i}" oninput="updateItem(${i})"></td>
       <td id="total_${i}">0.000</td>
-      <td class="no-print" style="text-align:center;"><button onclick="deleteEmptyRow(this)" class="btn-del">X</button></td>
+      <td class="no-print" style="text-align:center;"><button onclick="deleteRow(this)" class="btn-del">X</button></td>
     </tr>`;
     tbody.innerHTML += emptyRow;
   }
@@ -54,32 +56,52 @@ function renderRows() {
 }
 
 function updateItem(index) {
-  let qty = parseFloat(document.getElementById(`qty_${index}`)?.value) || 0;
-  let unit = parseFloat(document.getElementById(`unit_${index}`)?.value) || 0;
+  let row = document.querySelectorAll('#itemsBody tr')[index];
+  if (!row) return;
+
+  let qty = parseFloat(row.querySelectorAll('input[type="number"]')[0]?.value) || 0;
+  let unit = parseFloat(row.querySelectorAll('input[type="number"]')[1]?.value) || 0;
   let total = qty * unit;
 
-  let totalElem = document.getElementById(`total_${index}`);
-  if (totalElem) {
-    totalElem.innerText = total.toFixed(3);
+  let totalCell = row.querySelector('td:nth-child(4)');
+  if (totalCell) {
+    totalCell.innerText = total.toFixed(3);
   }
 
   calculateTotals();
 }
 
 function addNewRow() {
-  itemsData.push({ desc: "", qty: "", unit: "" });
-  renderRows();
+  const tbody = document.getElementById('itemsBody');
+  let newIndex = tbody.querySelectorAll('tr').length;
+  let row = `<tr>
+    <td><input type="text" id="desc_${newIndex}" placeholder="Enter work description..."></td>
+    <td><input type="number" id="qty_${newIndex}" oninput="updateItem(${newIndex})"></td>
+    <td><input type="number" id="unit_${newIndex}" oninput="updateItem(${newIndex})"></td>
+    <td id="total_${newIndex}">0.000</td>
+    <td class="no-print" style="text-align:center;"><button onclick="deleteRow(this)" class="btn-del">X</button></td>
+  </tr>`;
+  tbody.innerHTML += row;
+  calculateTotals();
 }
 
-function deleteRow(index) {
-  itemsData.splice(index, 1);
-  renderRows();
-}
-
-function deleteEmptyRow(btn) {
-  // Remove row directly from the DOM and recalculate
+function deleteRow(btn) {
   let row = btn.closest('tr');
   row.remove();
+  calculateTotals();
+}
+
+function removeEmptyRowsBeforePrint() {
+  const rows = document.querySelectorAll('#itemsBody tr');
+  rows.forEach((row) => {
+    let desc = row.querySelector('input[type="text"]')?.value.trim();
+    let qty = row.querySelectorAll('input[type="number"]')[0]?.value;
+    let unit = row.querySelectorAll('input[type="number"]')[1]?.value;
+
+    if (!desc && !qty && !unit) {
+      row.remove();
+    }
+  });
   calculateTotals();
 }
 
@@ -113,16 +135,15 @@ function calculateTotals() {
 
 function initSignaturePad() {
   canvas = document.getElementById('sigCanvas');
+  if (!canvas) return;
   ctx = canvas.getContext('2d');
   ctx.strokeStyle = "#000000";
   ctx.lineWidth = 2;
 
-  // Touch Events for Mobile Screen
   canvas.addEventListener('touchstart', startDraw);
   canvas.addEventListener('touchmove', draw);
   canvas.addEventListener('touchend', stopDraw);
 
-  // Mouse Events for Desktop
   canvas.addEventListener('mousedown', startDraw);
   canvas.addEventListener('mousemove', draw);
   canvas.addEventListener('mouseup', stopDraw);
@@ -182,14 +203,14 @@ function saveAndDownloadPDF() {
     return;
   }
 
-  // Convert canvas signature into image tag for print render
+  removeEmptyRowsBeforePrint();
+
   const dataURL = canvas.toDataURL();
   const sigImg = document.getElementById('sigImage');
   sigImg.src = dataURL;
   sigImg.style.display = 'block';
   canvas.style.display = 'none';
 
-  // 1. Save entry to Statement of Account
   let statement = JSON.parse(localStorage.getItem('invoiceStatement')) || [];
   statement.push({
     "Date": date,
@@ -200,10 +221,8 @@ function saveAndDownloadPDF() {
   });
   localStorage.setItem('invoiceStatement', JSON.stringify(statement));
 
-  // 2. Increment Invoice Number for next invoice
   localStorage.setItem('lastInvoiceNo', invoiceNo);
 
-  // 3. Download / Print PDF
   setTimeout(() => {
     window.print();
   }, 200);
