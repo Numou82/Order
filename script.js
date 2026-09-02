@@ -29,6 +29,7 @@ function renderRows() {
   const tbody = document.getElementById('itemsBody');
   tbody.innerHTML = '';
 
+  // Render populated rows
   itemsData.forEach((item, index) => {
     let row = `<tr>
       <td><input type="text" value="${item.desc}" id="desc_${index}" placeholder="Enter work description..."></td>
@@ -40,14 +41,14 @@ function renderRows() {
     tbody.innerHTML += row;
   });
 
-  // Default empty rows for presentation
+  // Render default empty rows with delete buttons enabled
   for (let i = itemsData.length; i < 7; i++) {
     let emptyRow = `<tr>
       <td><input type="text" id="desc_${i}" placeholder="Enter description..."></td>
       <td><input type="number" id="qty_${i}" oninput="updateItem(${i})"></td>
       <td><input type="number" id="unit_${i}" oninput="updateItem(${i})"></td>
       <td id="total_${i}">0.000</td>
-      <td class="no-print"></td>
+      <td class="no-print" style="text-align:center;"><button onclick="deleteEmptyRow(this)" class="btn-del">X</button></td>
     </tr>`;
     tbody.innerHTML += emptyRow;
   }
@@ -78,16 +79,24 @@ function deleteRow(index) {
   renderRows();
 }
 
+function deleteEmptyRow(btn) {
+  // Remove row directly from the DOM and recalculate
+  let row = btn.closest('tr');
+  row.remove();
+  calculateTotals();
+}
+
 function calculateTotals() {
   let subtotal = 0;
   const rows = document.querySelectorAll('#itemsBody tr');
 
-  rows.forEach((row, i) => {
-    let qty = parseFloat(document.getElementById(`qty_${i}`)?.value) || 0;
-    let unit = parseFloat(document.getElementById(`unit_${i}`)?.value) || 0;
+  rows.forEach((row) => {
+    let inputs = row.querySelectorAll('input[type="number"]');
+    let qty = parseFloat(inputs[0]?.value) || 0;
+    let unit = parseFloat(inputs[1]?.value) || 0;
     let total = qty * unit;
 
-    let cell = document.getElementById(`total_${i}`);
+    let cell = row.querySelector('td:nth-child(4)');
     if (cell) cell.innerText = total.toFixed(3);
 
     subtotal += total;
