@@ -1,52 +1,92 @@
-// Default items matching original invoice
-const defaultItems = [
+let itemsData = [
   { desc: "Electric work with matreialmodel no60 (Machine provide by me)", qty: 1, unit: 1200 },
-  { desc: "ducting work with matreial", qty: "", unit: "" },
-  { desc: "copper work with commisining", qty: "", unit: "" },
-  { desc: "", qty: "", unit: "" },
-  { desc: "", qty: "", unit: "" },
-  { desc: "", qty: "", unit: "" },
-  { desc: "", qty: "", unit: "" },
-  { desc: "", qty: "", unit: "" },
-  { desc: "", qty: "", unit: "" },
-  { desc: "", qty: "", unit: "" },
-  { desc: "", qty: "", unit: "" }
+  { desc: "ducting work with matreial", qty: 0, unit: 0 },
+  { desc: "copper work with commisining", qty: 0, unit: 0 }
 ];
 
 window.onload = function () {
+  // Set current date
   document.getElementById('invoiceDate').valueAsDate = new Date();
-  let lastInvNo = parseInt(localStorage.getItem('lastInvoiceNo')) || 46237;
-  document.getElementById('invoiceNo').value = lastInvNo + 1;
+
+  // Automatic Invoice Number starting at 5000
+  let lastInvNo = localStorage.getItem('lastInvoiceNo');
+  if (!lastInvNo) {
+    lastInvNo = 5000;
+  } else {
+    lastInvNo = parseInt(lastInvNo) + 1;
+  }
+  document.getElementById('invoiceNo').value = lastInvNo;
+
   renderRows();
 };
 
 function renderRows() {
   const tbody = document.getElementById('itemsBody');
   tbody.innerHTML = '';
-  
-  defaultItems.forEach((item, index) => {
+
+  itemsData.forEach((item, index) => {
     let row = `<tr>
-      <td><input type="text" value="${item.desc}" id="desc_${index}"></td>
-      <td><input type="number" value="${item.qty}" id="qty_${index}" oninput="calculateTotals()"></td>
-      <td><input type="number" value="${item.unit}" id="unit_${index}" oninput="calculateTotals()"></td>
+      <td><input type="text" value="${item.desc}" id="desc_${index}" oninput="updateItem(${index})"></td>
+      <td><input type="number" value="${item.qty || ''}" id="qty_${index}" oninput="updateItem(${index})"></td>
+      <td><input type="number" value="${item.unit || ''}" id="unit_${index}" oninput="updateItem(${index})"></td>
       <td id="total_${index}">0.000</td>
+      <td class="no-print" style="text-align:center;"><button onclick="deleteRow(${index})" class="btn-del">X</button></td>
     </tr>`;
     tbody.innerHTML += row;
   });
+
+  // Add empty default rows for aesthetics
+  for (let i = itemsData.length; i < 8; i++) {
+    let emptyRow = `<tr>
+      <td><input type="text" placeholder="Enter description..." id="desc_${i}" oninput="updateItem(${i})"></td>
+      <td><input type="number" id="qty_${i}" oninput="updateItem(${i})"></td>
+      <td><input type="number" id="unit_${i}" oninput="updateItem(${i})"></td>
+      <td id="total_${i}">0.000</td>
+      <td class="no-print"></td>
+    </tr>`;
+    tbody.innerHTML += emptyRow;
+  }
+
   calculateTotals();
+}
+
+function updateItem(index) {
+  let qty = parseFloat(document.getElementById(`qty_${index}`)?.value) || 0;
+  let unit = parseFloat(document.getElementById(`unit_${index}`)?.value) || 0;
+  let total = qty * unit;
+
+  let totalElem = document.getElementById(`total_${index}`);
+  if (totalElem) {
+    totalElem.innerText = total.toFixed(3);
+  }
+
+  calculateTotals();
+}
+
+function addNewRow() {
+  itemsData.push({ desc: "", qty: "", unit: "" });
+  renderRows();
+}
+
+function deleteRow(index) {
+  itemsData.splice(index, 1);
+  renderRows();
 }
 
 function calculateTotals() {
   let subtotal = 0;
+  const rows = document.querySelectorAll('#itemsBody tr');
 
-  for (let i = 0; i < defaultItems.length; i++) {
-    let qty = parseFloat(document.getElementById(`qty_${i}`).value) || 0;
-    let unit = parseFloat(document.getElementById(`unit_${i}`).value) || 0;
+  rows.forEach((row, i) => {
+    let qty = parseFloat(document.getElementById(`qty_${i}`)?.value) || 0;
+    let unit = parseFloat(document.getElementById(`unit_${i}`)?.value) || 0;
     let total = qty * unit;
-    
-    document.getElementById(`total_${i}`).innerText = total.toFixed(3);
+
+    let cell = document.getElementById(`total_${i}`);
+    if (cell) cell.innerText = total.toFixed(3);
+
     subtotal += total;
-  }
+  });
 
   document.getElementById('subtotal').innerText = subtotal.toFixed(3);
 
@@ -58,7 +98,7 @@ function calculateTotals() {
   document.getElementById('totalAmount').innerText = "KWD " + grandTotal.toFixed(3);
 }
 
-function saveAndPrint() {
+function saveAndDownloadPDF() {
   const invoiceNo = document.getElementById('invoiceNo').value;
   const date = document.getElementById('invoiceDate').value;
   const clientName = document.getElementById('contactName').value || document.getElementById('clientCompany').value;
@@ -66,11 +106,11 @@ function saveAndPrint() {
   const grandTotal = document.getElementById('totalAmount').innerText;
 
   if (!clientName) {
-    alert("Please enter Customer Name or Company Name");
+    alert("Please enter Contact Name or Client Company Name");
     return;
   }
 
-  // 1. Save entry to Statement of Account
+  // 1. Save record into LocalStorage for Statement of Account
   let statement = JSON.parse(localStorage.getItem('invoiceStatement')) || [];
   statement.push({
     "Date": date,
@@ -81,29 +121,18 @@ function saveAndPrint() {
   });
   localStorage.setItem('invoiceStatement', JSON.stringify(statement));
 
-  // 2. Save Next Invoice Number
+  // 2. Save current Invoice Number so next invoice increments from here
   localStorage.setItem('lastInvoiceNo', invoiceNo);
 
-  // 3. Generate 1-Page PDF
-  const element = document.getElementById('invoice');
-  const opt = {
-    margin:       0,
-    filename:     `Inv-${invoiceNo}.pdf`,
-    image:        { type: 'jpeg', quality: 0.98 },
-    html2canvas:  { scale: 2 },
-    jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
-  };
-
-  html2pdf().set(opt).from(element).save().then(() => {
-    location.reload();
-  });
+  // 3. Trigger native print to save as 1-Page PDF cleanly
+  window.print();
 }
 
 function exportStatement() {
   let statement = JSON.parse(localStorage.getItem('invoiceStatement')) || [];
 
   if (statement.length === 0) {
-    alert("No records found!");
+    alert("No saved invoices found in statement!");
     return;
   }
 
