@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Saif Centralac - Invoice Generator</title>
+  <title>Saif Centralac - Invoice</title>
   <link rel="stylesheet" href="style.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -15,76 +15,82 @@
     <button onclick="resetForm()" class="btn-reset">New Invoice</button>
   </div>
 
-  <!-- SINGLE PAGE CONTAINER -->
   <div id="invoice" class="invoice-box">
     
-    <!-- Header with Image Logo -->
-    <div class="header">
-      <div class="company-details">
-        <h2>Saif Centralac</h2>
-        <p>Air Conditioner</p>
-        <p>Jileeb Abbasiya, Block 1 Street 238</p>
-        <p>Mob. 65704705</p>
+    <!-- Top Row Header -->
+    <div class="header-row">
+      <div class="left-company">
+        <h2>Saif Centralac Air Conditioner</h2>
+        <p>Jileeb Abbasiya</p>
+        <p>Block 1 Street 238</p>
+        <p>Mob.65704705</p>
       </div>
-      <div class="logo-section">
-        <img src="logo.png" alt="Saif Centralac Logo" class="invoice-logo">
-      </div>
-    </div>
-
-    <hr class="divider">
-
-    <!-- Client Info & Meta -->
-    <div class="info-grid">
-      <div class="bill-to">
-        <h4 class="section-title">BILL TO</h4>
-        <p><strong>Contact Name:</strong> <input type="text" id="contactName" placeholder="Contact Name"></p>
-        <p><strong>Client Company Name:</strong> <input type="text" id="clientCompany" placeholder="Company Name"></p>
-        <p><strong>Address:</strong> <input type="text" id="clientAddress" placeholder="Address"></p>
-        <p><strong>Phone:</strong> <input type="text" id="clientPhone" placeholder="Mobile No"></p>
-      </div>
-      <div class="invoice-meta">
-        <p><strong>DATE:</strong> <input type="date" id="invoiceDate"></p>
-        <p><strong>Invoice NO.:</strong> <input type="text" id="invoiceNo" readonly></p>
+      <div class="right-logo">
+        <img id="invoiceLogo" src="logo.png" alt="Saif Centralac Logo" onerror="this.style.display='none'; document.getElementById('textLogo').style.display='block';">
+        <div id="textLogo" class="text-logo-box" style="display:none;">
+          <div class="stars">★ ★ ★</div>
+          <h1>Saif</h1>
+          <div class="red-bar">CENTRALAC</div>
+          <p>AC REPAIR & SERVICE</p>
+        </div>
       </div>
     </div>
 
-    <!-- Line Items Table -->
+    <!-- Bill To & Invoice Info Block -->
+    <div class="info-block">
+      <div class="bill-to-box">
+        <div class="section-header">BILL TO</div>
+        <p><strong>Contact Name</strong> <input type="text" id="contactName"></p>
+        <p><strong>Client Company Name</strong> <input type="text" id="clientCompany" value="Smile Clinic"></p>
+        <p><strong>Address:</strong> <input type="text" id="clientAddress" value="Salmiya block 2"></p>
+        <p><strong>Phone</strong> <input type="text" id="clientPhone"></p>
+      </div>
+
+      <div class="invoice-meta-box">
+        <p><strong>DATE</strong></p>
+        <p><input type="date" id="invoiceDate"></p>
+        <p><strong>Invoice NO.</strong></p>
+        <p><input type="text" id="invoiceNo" readonly></p>
+      </div>
+    </div>
+
+    <!-- Items Table -->
     <table class="items-table">
       <thead>
         <tr>
           <th>DESCRIPTION</th>
           <th width="60">QTY</th>
-          <th width="90">Per Unit</th>
-          <th width="100">TOTAL</th>
+          <th width="100">Per Unit</th>
+          <th width="110">TOTAL</th>
         </tr>
       </thead>
       <tbody id="itemsBody">
-        <!-- Rows filled by script.js -->
       </tbody>
     </table>
 
-    <!-- Summary & Terms -->
-    <div class="bottom-section">
-      <div class="terms">
-        <p><strong>Advanced:</strong> <input type="text" id="advancePaid" placeholder="e.g. 700 KWD"></p>
+    <!-- Bottom Terms and Calculations -->
+    <div class="bottom-block">
+      <div class="terms-left">
+        <p class="advance-text"><strong>Advanced</strong> <input type="text" id="advancePaid" value="700KWD"></p>
         <h4>Terms & Conditions (Summary)</h4>
-        <ul>
-          <li><strong>Scope of Work:</strong> AC repair and installation as per invoice.</li>
-          <li><strong>Warranty:</strong> 6 months on parts and labor; misuse not covered.</li>
-          <li><strong>Liability:</strong> Not responsible for pre-existing electrical/structural issues.</li>
-          <li><strong>Extra Service:</strong> Additional visits billed separately.</li>
-          <li><strong>Cancellation:</strong> 24-hour notice required; fees may apply.</li>
-          <li><strong>Customer Duties:</strong> Provide safe access and utilities during service.</li>
-        </ul>
+        <p><strong>Scope of Work:</strong> AC repair and installation as per invoice.</p>
+        <p><strong>Warranty:</strong> 6 months on parts and labor; misuse not covered.</p>
+        <p><strong>Liability:</strong> Not responsible for pre-existing electrical/structural issues.</p>
+        <p><strong>Extra Service:</strong> Additional visits billed separately.</p>
+        <p><strong>Cancellation:</strong> 24-hour notice required; fees may apply.</p>
+        <p><strong>Customer Duties:</strong> Provide safe access and utilities during service.</p>
       </div>
 
-      <div class="totals">
-        <p><span>SUBTOTAL</span> <span id="subtotal">0.000</span></p>
+      <div class="totals-right">
+        <p><span>SUBTOTAL</span> <span id="subtotal">1200.000</span></p>
         <p><span>DISCOUNT</span> <input type="number" id="discount" value="0" oninput="calculateTotals()"></p>
         <p><span>HANDLING LIFTING</span> <input type="number" id="handling" value="0" oninput="calculateTotals()"></p>
         <p><span>INSTALLATION</span> <input type="number" id="installation" value="0" oninput="calculateTotals()"></p>
         <hr>
-        <h3><span>Total Amount</span> <span id="totalAmount">KWD 0.000</span></h3>
+        <div class="total-row">
+          <span>Total Amount</span>
+          <span id="totalAmount">KWD 1,200.000</span>
+        </div>
       </div>
     </div>
 
