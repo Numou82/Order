@@ -1,18 +1,23 @@
+* {
+  box-sizing: border-box;
+}
+
 body {
   font-family: Arial, sans-serif;
   background-color: #f4f4f9;
-  margin: 20px;
+  margin: 10px;
+  color: #000;
 }
 
 .actions {
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 }
 
 button {
-  padding: 10px 20px;
-  font-size: 14px;
-  margin: 5px;
+  padding: 8px 16px;
+  font-size: 13px;
+  margin: 3px;
   cursor: pointer;
   border: none;
   border-radius: 4px;
@@ -22,13 +27,14 @@ button {
 .btn-secondary { background: #007bff; color: white; }
 .btn-reset { background: #6c757d; color: white; }
 
+/* Fixed dimensions for single-page print fit */
 .invoice-box {
-  max-width: 800px;
+  width: 750px;
+  height: 1020px; /* Fits 1 A4 page strictly */
   margin: auto;
-  padding: 30px;
-  border: 1px solid #eee;
+  padding: 20px;
+  border: 1px solid #ccc;
   background: #fff;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
 }
 
 .header {
@@ -37,53 +43,89 @@ button {
   align-items: center;
 }
 
-.company-details h2 { margin: 0; color: #333; }
-.company-details p { margin: 2px 0; font-size: 14px; }
+.company-details h2 { margin: 0; color: #111; font-size: 20px; }
+.company-details p { margin: 2px 0; font-size: 12px; }
 
-.logo-section h1 { margin: 0; color: #1e3d59; font-size: 28px; }
-.logo-section span { font-weight: bold; color: #17a2b8; letter-spacing: 2px; }
-.logo-section p { margin: 0; font-size: 11px; }
+.invoice-logo {
+  max-width: 170px;
+  height: auto;
+}
+
+.divider {
+  border: 0;
+  border-top: 2px solid #800000;
+  margin: 10px 0;
+}
 
 .info-grid {
   display: flex;
   justify-content: space-between;
-  margin-top: 20px;
+  margin-bottom: 10px;
+}
+
+.section-title {
+  margin: 0 0 5px 0;
+  color: #800000;
 }
 
 .bill-to p, .invoice-meta p {
-  margin: 4px 0;
-  font-size: 14px;
+  margin: 3px 0;
+  font-size: 12px;
 }
 
 input {
   border: 1px solid #ccc;
-  padding: 4px;
-  font-size: 13px;
+  padding: 2px 4px;
+  font-size: 12px;
 }
 
+/* Matching the table styling with dark red header */
 .items-table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 20px;
+  margin-top: 5px;
 }
 
-.items-table th, .items-table td {
-  border: 1px solid #ddd;
-  padding: 8px;
+.items-table th {
+  background-color: #800000; /* Dark Red match */
+  color: #ffffff;
+  padding: 6px;
+  font-size: 12px;
   text-align: left;
 }
 
-.items-table th { background-color: #f2f2f2; }
+.items-table th:not(:first-child) {
+  text-align: right;
+}
+
+.items-table td {
+  border: 1px solid #000;
+  padding: 4px 6px;
+  font-size: 11px;
+}
+
+.items-table td input {
+  border: none;
+  background: transparent;
+  width: 100%;
+}
+
+.items-table td:not(:first-child) {
+  text-align: right;
+}
 
 .bottom-section {
   display: flex;
   justify-content: space-between;
-  margin-top: 20px;
+  margin-top: 15px;
 }
 
-.terms { width: 55%; font-size: 11px; }
-.terms ul { padding-left: 15px; margin-top: 5px; }
+.terms { width: 55%; font-size: 10px; }
+.terms h4 { margin: 5px 0 2px 0; font-size: 11px; }
+.terms ul { padding-left: 15px; margin: 3px 0; }
+.terms li { margin-bottom: 2px; }
 
-.totals { width: 38%; font-size: 14px; }
-.totals p { display: flex; justify-content: space-between; margin: 5px 0; }
-.totals input { width: 80px; text-align: right; }
+.totals { width: 40%; font-size: 12px; }
+.totals p { display: flex; justify-content: space-between; margin: 4px 0; }
+.totals input { width: 70px; text-align: right; }
+.totals h3 { display: flex; justify-content: space-between; font-size: 14px; margin-top: 5px; }
