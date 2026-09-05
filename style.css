@@ -45,6 +45,13 @@ button {
   margin-bottom: 10px;
 }
 
+/* Added outline border to company header box */
+.left-company {
+  border: 1px solid #002060;
+  padding: 8px 12px;
+  width: 58%;
+}
+
 .left-company h2 {
   margin: 0 0 4px 0;
   font-size: 18px;
@@ -80,7 +87,13 @@ button {
   margin-bottom: 15px;
 }
 
-.bill-to-box { width: 60%; }
+/* Added outline border to Customer Details box */
+.bill-to-box { 
+  width: 58%; 
+  border: 1px solid #002060;
+  padding: 8px 12px;
+}
+
 .section-header { font-weight: bold; font-size: 12px; margin-bottom: 5px; color: #800000; }
 
 .bill-to-box p, .invoice-meta-box p {
@@ -95,7 +108,12 @@ input[type="text"], input[type="date"], input[type="number"] {
   padding: 2px 4px;
 }
 
-.invoice-meta-box { width: 35%; }
+/* Added outline border to Date & Invoice box */
+.invoice-meta-box { 
+  width: 38%; 
+  border: 1px solid #002060;
+  padding: 8px 12px;
+}
 
 .items-table {
   width: 100%;
@@ -150,7 +168,15 @@ input[type="text"], input[type="date"], input[type="number"] {
   margin-top: 15px;
 }
 
-.terms-left { width: 58%; font-size: 10px; line-height: 1.3; }
+/* Added outline border to Terms & Conditions box */
+.terms-left { 
+  width: 58%; 
+  font-size: 10px; 
+  line-height: 1.3; 
+  border: 1px solid #002060;
+  padding: 8px;
+}
+
 .terms-left p { margin: 2px 0; }
 .advance-text { font-size: 12px; margin-bottom: 8px; }
 
