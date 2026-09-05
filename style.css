@@ -7,6 +7,7 @@ body {
   background: #e9ecef;
   margin: 10px;
   color: #000;
+  -webkit-text-size-adjust: 100%;
 }
 
 .actions {
@@ -31,11 +32,26 @@ button {
 
 .invoice-box {
   width: 790px;
+  max-width: 100%;
   min-height: 1000px;
   margin: 0 auto;
-  padding: 25px;
+  padding: 20px;
   background: #ffffff;
   border: 1px solid #ccc;
+}
+
+/* Document Title Header */
+.doc-title-container {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.doc-title-container h1 {
+  margin: 0;
+  font-size: 22px;
+  color: #800000;
+  letter-spacing: 2px;
+  text-transform: uppercase;
 }
 
 .header-row {
@@ -45,7 +61,7 @@ button {
   margin-bottom: 10px;
 }
 
-/* Added outline border to company header box */
+/* Company Header Box */
 .left-company {
   border: 1px solid #002060;
   padding: 8px 12px;
@@ -63,6 +79,14 @@ button {
   font-size: 12px;
 }
 
+/* Logo & Date/Meta Wrapper */
+.right-logo-container {
+  width: 38%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
 .right-logo img {
   max-width: 180px;
   max-height: 90px;
@@ -74,20 +98,34 @@ button {
   text-align: center;
   padding: 6px 15px;
   border-radius: 4px;
+  width: 100%;
 }
 
 .text-logo-box h1 { margin: 0; font-size: 24px; }
 .text-logo-box .red-bar { background: #900; font-size: 11px; font-weight: bold; margin: 2px 0; }
 .text-logo-box p { margin: 0; font-size: 8px; }
 
+/* Date & Invoice Meta Box below Logo */
+.invoice-meta-box { 
+  width: 100%; 
+  border: 1px solid #002060;
+  padding: 6px 10px;
+  margin-top: 8px;
+}
+
+.invoice-meta-box p {
+  margin: 3px 0;
+  font-size: 12px;
+}
+
 .info-block {
   display: flex;
   justify-content: space-between;
-  margin-top: 15px;
+  margin-top: 10px;
   margin-bottom: 15px;
 }
 
-/* Added outline border to Customer Details box */
+/* Customer Details Box */
 .bill-to-box { 
   width: 58%; 
   border: 1px solid #002060;
@@ -96,23 +134,27 @@ button {
 
 .section-header { font-weight: bold; font-size: 12px; margin-bottom: 5px; color: #800000; }
 
-.bill-to-box p, .invoice-meta-box p {
+.bill-to-box p {
   margin: 4px 0;
   font-size: 12px;
 }
 
 input[type="text"], input[type="date"], input[type="number"] {
-  border: none;
-  border-bottom: 1px solid #aaa;
+  border: 1px solid #767676;
+  border-radius: 2px;
   font-size: 12px;
-  padding: 2px 4px;
+  padding: 3px 6px;
+  outline: none;
+  background-color: #ffffff;
 }
 
-/* Added outline border to Date & Invoice box */
-.invoice-meta-box { 
-  width: 38%; 
-  border: 1px solid #002060;
-  padding: 8px 12px;
+input[type="text"]:focus, input[type="date"]:focus, input[type="number"]:focus {
+  border-color: #000000;
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
 }
 
 .items-table {
@@ -145,6 +187,7 @@ input[type="text"], input[type="date"], input[type="number"] {
   width: 100%;
   font-size: 11px;
   background: transparent;
+  padding: 0;
 }
 
 .items-table td:not(:first-child) {
@@ -168,7 +211,6 @@ input[type="text"], input[type="date"], input[type="number"] {
   margin-top: 15px;
 }
 
-/* Added outline border to Terms & Conditions box */
 .terms-left { 
   width: 58%; 
   font-size: 10px; 
@@ -180,7 +222,7 @@ input[type="text"], input[type="date"], input[type="number"] {
 .terms-left p { margin: 2px 0; }
 .advance-text { font-size: 12px; margin-bottom: 8px; }
 
-/* Signature Square Box Styling */
+/* Signature Canvas */
 .signature-section {
   margin-top: 10px;
 }
@@ -191,7 +233,8 @@ input[type="text"], input[type="date"], input[type="number"] {
 }
 
 .signature-box {
-  width: 282px;
+  width: 100%;
+  max-width: 282px;
   height: 92px;
   border: 2px dashed #333;
   background: #fff;
@@ -199,12 +242,14 @@ input[type="text"], input[type="date"], input[type="number"] {
 }
 
 #sigCanvas {
-  touch-action: none; /* Allows smooth mobile drawing */
+  touch-action: none;
   cursor: crosshair;
+  width: 100%;
+  height: 100%;
 }
 
 #sigImage {
-  max-width: 280px;
+  max-width: 100%;
   max-height: 90px;
 }
 
@@ -220,11 +265,23 @@ input[type="text"], input[type="date"], input[type="number"] {
   margin-top: 5px;
 }
 
+/* Median APK & Mobile View Responsiveness */
+@media screen and (max-width: 768px) {
+  body { margin: 5px; }
+  .invoice-box { padding: 10px; }
+  .header-row, .info-block, .bottom-block { flex-direction: column; }
+  .left-company, .right-logo-container, .bill-to-box, .terms-left, .totals-right {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+}
+
 /* Print Rules */
 @media print {
   body { background: white; margin: 0; }
   .no-print { display: none !important; }
   .invoice-box { border: none; width: 100%; padding: 0; }
-  input { border: none !important; }
+  input { border: 1px solid #767676 !important; }
+  .items-table td input { border: none !important; }
   .signature-box { border: 1px solid #000; }
 }
