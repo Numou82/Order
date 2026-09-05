@@ -1,15 +1,15 @@
-// Default items array started completely blank
 let itemsData = [
   { desc: "", qty: "", unit: "" }
 ];
 
 let canvas, ctx;
 let isDrawing = false;
+let currentDocType = "Invoice"; // Default document mode
 
 window.onload = function () {
   document.getElementById('invoiceDate').valueAsDate = new Date();
 
-  // Automatic Invoice Number starting at 5000
+  // Automatic Document Number starting at 5000
   let lastInvNo = localStorage.getItem('lastInvoiceNo');
   if (!lastInvNo) {
     lastInvNo = 5000;
@@ -22,16 +22,37 @@ window.onload = function () {
   initSignaturePad();
 };
 
+/* --- Document Type Toggle (Invoice / Quotation) --- */
+
+function toggleDocType() {
+  const titleElem = document.getElementById('docTitle');
+  const labelElem = document.getElementById('numberLabel');
+  const btnElem = document.getElementById('docTypeBtn');
+
+  if (currentDocType === "Invoice") {
+    currentDocType = "Quotation";
+    titleElem.innerText = "QUOTATION";
+    labelElem.innerText = "Quotation NO.:";
+    btnElem.innerText = "Switch to Invoice";
+    btnElem.style.background = "#198754";
+  } else {
+    currentDocType = "Invoice";
+    titleElem.innerText = "INVOICE";
+    labelElem.innerText = "Invoice NO.:";
+    btnElem.innerText = "Switch to Quotation";
+    btnElem.style.background = "#6f42c1";
+  }
+}
+
 /* --- Table & Calculations --- */
 
 function renderRows() {
   const tbody = document.getElementById('itemsBody');
   tbody.innerHTML = '';
 
-  // Render populated/starter rows
   itemsData.forEach((item, index) => {
     let row = `<tr>
-      <td><input type="text" value="${item.desc}" id="desc_${index}" placeholder="Enter work description..."></td>
+      <td><input type="text" value="${item.desc}" id="desc_${index}" placeholder="Enter description..."></td>
       <td><input type="number" value="${item.qty || ''}" id="qty_${index}" oninput="updateItem(${index})"></td>
       <td><input type="number" value="${item.unit || ''}" id="unit_${index}" oninput="updateItem(${index})"></td>
       <td id="total_${index}">0.000</td>
@@ -40,7 +61,6 @@ function renderRows() {
     tbody.innerHTML += row;
   });
 
-  // Render empty rows with delete buttons enabled
   for (let i = itemsData.length; i < 6; i++) {
     let emptyRow = `<tr>
       <td><input type="text" id="desc_${i}" placeholder="Enter description..."></td>
@@ -75,7 +95,7 @@ function addNewRow() {
   const tbody = document.getElementById('itemsBody');
   let newIndex = tbody.querySelectorAll('tr').length;
   let row = `<tr>
-    <td><input type="text" id="desc_${newIndex}" placeholder="Enter work description..."></td>
+    <td><input type="text" id="desc_${newIndex}" placeholder="Enter description..."></td>
     <td><input type="number" id="qty_${newIndex}" oninput="updateItem(${newIndex})"></td>
     <td><input type="number" id="unit_${newIndex}" oninput="updateItem(${newIndex})"></td>
     <td id="total_${newIndex}">0.000</td>
@@ -131,7 +151,7 @@ function calculateTotals() {
   document.getElementById('totalAmount').innerText = "KWD " + grandTotal.toFixed(3);
 }
 
-/* --- Touch & Mouse Signature Pad Logic --- */
+/* --- Mobile / Touch Signature Canvas --- */
 
 function initSignaturePad() {
   canvas = document.getElementById('sigCanvas');
@@ -140,8 +160,8 @@ function initSignaturePad() {
   ctx.strokeStyle = "#000000";
   ctx.lineWidth = 2;
 
-  canvas.addEventListener('touchstart', startDraw);
-  canvas.addEventListener('touchmove', draw);
+  canvas.addEventListener('touchstart', startDraw, { passive: false });
+  canvas.addEventListener('touchmove', draw, { passive: false });
   canvas.addEventListener('touchend', stopDraw);
 
   canvas.addEventListener('mousedown', startDraw);
@@ -189,7 +209,7 @@ function clearSignature() {
   document.getElementById('sigImage').style.display = 'none';
 }
 
-/* --- Save & PDF Generation --- */
+/* --- Export & Save Logic --- */
 
 function saveAndDownloadPDF() {
   const invoiceNo = document.getElementById('invoiceNo').value;
@@ -213,14 +233,14 @@ function saveAndDownloadPDF() {
 
   let statement = JSON.parse(localStorage.getItem('invoiceStatement')) || [];
   statement.push({
+    "Type": currentDocType,
     "Date": date,
-    "Invoice No": invoiceNo,
+    "Document No": invoiceNo,
     "Customer Name": clientName,
     "Mobile No": mobile,
     "Total Amount": grandTotal
   });
   localStorage.setItem('invoiceStatement', JSON.stringify(statement));
-
   localStorage.setItem('lastInvoiceNo', invoiceNo);
 
   setTimeout(() => {
