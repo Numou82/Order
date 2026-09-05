@@ -40,10 +40,10 @@ button {
   border: 1px solid #ccc;
 }
 
-/* Document Title Header */
+/* Centered Top Title */
 .doc-title-container {
   text-align: center;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 .doc-title-container h1 {
@@ -51,17 +51,17 @@ button {
   font-size: 22px;
   color: #800000;
   letter-spacing: 2px;
-  text-transform: uppercase;
+  font-weight: bold;
 }
 
+/* Top Header Row (Company Left / Logo Right) */
 .header-row {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 10px;
+  align-items: center;
+  margin-bottom: 15px;
 }
 
-/* Company Header Box */
 .left-company {
   border: 1px solid #002060;
   padding: 8px 12px;
@@ -79,17 +79,17 @@ button {
   font-size: 12px;
 }
 
-/* Logo & Date/Meta Wrapper */
-.right-logo-container {
+.right-logo {
   width: 38%;
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
+  justify-content: flex-end;
+  align-items: center;
 }
 
 .right-logo img {
   max-width: 180px;
   max-height: 90px;
+  object-fit: contain;
 }
 
 .text-logo-box {
@@ -105,24 +105,13 @@ button {
 .text-logo-box .red-bar { background: #900; font-size: 11px; font-weight: bold; margin: 2px 0; }
 .text-logo-box p { margin: 0; font-size: 8px; }
 
-/* Date & Invoice Meta Box below Logo */
-.invoice-meta-box { 
-  width: 100%; 
-  border: 1px solid #002060;
-  padding: 6px 10px;
-  margin-top: 8px;
-}
-
-.invoice-meta-box p {
-  margin: 3px 0;
-  font-size: 12px;
-}
-
+/* Info Block Row Below Header */
 .info-block {
   display: flex;
   justify-content: space-between;
-  margin-top: 10px;
+  align-items: stretch;
   margin-bottom: 15px;
+  gap: 10px;
 }
 
 /* Customer Details Box */
@@ -132,13 +121,29 @@ button {
   padding: 8px 12px;
 }
 
-.section-header { font-weight: bold; font-size: 12px; margin-bottom: 5px; color: #800000; }
+/* Date & Invoice Meta Box (Side-by-Side) */
+.invoice-meta-box { 
+  width: 38%; 
+  border: 1px solid #002060;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
 
-.bill-to-box p {
+.section-header { 
+  font-weight: bold; 
+  font-size: 12px; 
+  margin-bottom: 5px; 
+  color: #800000; 
+}
+
+.bill-to-box p, .invoice-meta-box p {
   margin: 4px 0;
   font-size: 12px;
 }
 
+/* 4-Side Box Borders for Input Fields */
 input[type="text"], input[type="date"], input[type="number"] {
   border: 1px solid #767676;
   border-radius: 2px;
@@ -152,6 +157,11 @@ input[type="text"]:focus, input[type="date"]:focus, input[type="number"]:focus {
   border-color: #000000;
 }
 
+.invoice-meta-box input {
+  max-width: 140px;
+}
+
+/* Items Table */
 .table-responsive {
   width: 100%;
   overflow-x: auto;
@@ -205,6 +215,7 @@ input[type="text"]:focus, input[type="date"]:focus, input[type="number"]:focus {
   font-size: 10px;
 }
 
+/* Bottom Block Section */
 .bottom-block {
   display: flex;
   justify-content: space-between;
@@ -222,7 +233,7 @@ input[type="text"]:focus, input[type="date"]:focus, input[type="number"]:focus {
 .terms-left p { margin: 2px 0; }
 .advance-text { font-size: 12px; margin-bottom: 8px; }
 
-/* Signature Canvas */
+/* Signature Box Styling */
 .signature-section {
   margin-top: 10px;
 }
@@ -265,18 +276,18 @@ input[type="text"]:focus, input[type="date"]:focus, input[type="number"]:focus {
   margin-top: 5px;
 }
 
-/* Median APK & Mobile View Responsiveness */
+/* Median.co Android APK / Mobile Responsiveness */
 @media screen and (max-width: 768px) {
   body { margin: 5px; }
   .invoice-box { padding: 10px; }
   .header-row, .info-block, .bottom-block { flex-direction: column; }
-  .left-company, .right-logo-container, .bill-to-box, .terms-left, .totals-right {
+  .left-company, .right-logo, .bill-to-box, .invoice-meta-box, .terms-left, .totals-right {
     width: 100%;
     margin-bottom: 10px;
   }
 }
 
-/* Print Rules */
+/* Print Overrides */
 @media print {
   body { background: white; margin: 0; }
   .no-print { display: none !important; }
